@@ -6,7 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "lint:inspect": "npx @eslint/config-inspector@latest",
+    "lint:commit": "npx eslint $(find $(git diff --diff-filter=d --name-only --cached | xargs) -type f -name \"*.ts\") --no-error-on-unmatched-pattern",
+    "lint:fix": "npx eslint . --fix"
   },
   "dependencies": {
     "vue": "^3.4.37"
@@ -15,9 +19,13 @@
     "@types/node": "^22.5.5",
     "@vitejs/plugin-vue": "^5.1.2",
     "autoprefixer": "^10.4.20",
+    "eslint": "^8.57.0",
+    "eslint-plugin-tailwindcss": "^3.17.4",
+    "eslint-plugin-vue": "^9.28.0",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.13",
     "typescript": "^5.5.3",
+    "typescript-eslint": "^8.7.0",
     "vite": "^5.4.1",
     "vue-tsc": "^2.0.29"
   },
