@@ -57,5 +57,14 @@ export default teslint.config(
         },
       ],
     }
+  },
+  {
+    files: [
+      `lib/**/__test__/*.{spec,test}.ts`,
+    ],
+    rules: {
+      "@typescript-eslint/no-unused-vars": `off`,
+      "@typescript-eslint/no-empty-function": `off`,
+    }
   }
 )

@@ -2,6 +2,8 @@ import vue from "@vitejs/plugin-vue"
 import { resolve } from "path"
 import { defineConfig } from "vite"
 import dts from "vite-plugin-dts"
+/// <reference types="vitest/config" />
+
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command}) => ({
@@ -40,5 +42,14 @@ export default defineConfig(({ command}) => ({
       "#": resolve("src"),
       "~": resolve("lib"),
     }
+  },
+  test: {
+    coverage: {
+      include: ["lib/**/*.ts"],
+      thresholds: {
+        100: true,
+      },
+    },
+    include: ["lib/**/__test__/*.{spec,test}.ts"],
   }
 }))

@@ -11,8 +11,12 @@
     "lint:inspect": "npx @eslint/config-inspector@latest",
     "lint:commit": "npx eslint $(find $(git diff --diff-filter=d --name-only --cached | xargs) -type f -name \"*.ts\") --no-error-on-unmatched-pattern",
     "lint:fix": "npx eslint . --fix",
+    "test:unit": "vitest",
+    "test:unit:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@vitest/coverage-v8": "^2.1.1",
+    "vitest": "^2.1.1",
     "vue": "^3.4.37"
   },
   "devDependencies": {
