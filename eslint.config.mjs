@@ -21,7 +21,10 @@ export default teslint.config(
     languageOptions: {
       parserOptions: {
         parser: teslint.parser,
-        project: `./tsconfig.app.json`,
+        project: [
+          `./tsconfig.app.json`,
+          `./tsconfig.node.json`,
+        ],
         extraFileExtensions: [`.vue`],
         sourceType: `module`,
       },

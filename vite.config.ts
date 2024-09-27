@@ -1,18 +1,27 @@
 import vue from "@vitejs/plugin-vue"
 import { resolve } from "path"
 import { defineConfig } from "vite"
+import dts from "vite-plugin-dts"
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command}) => ({
-  root: resolve(__dirname, "src"),
-  plugins: [vue()],
+  plugins: [
+    vue(),
+    dts({
+      outDir: "dist/types",
+      include: ["lib/**/*.ts"],
+      tsconfigPath: resolve(__dirname, "lib/tsconfig.json"),
+    }),
+  ],
   publicDir: command === `build` ? false : undefined,
   build: {
     lib: {
       // Could also be a dictionary or array of multiple entry points
-      entry: "src/index.ts",
+      entry: resolve(__dirname, "lib/index.ts"),
       name: 'GreyUI',
     },
+    outDir: "dist/lib",
+    emptyOutDir: true,
     rollupOptions: {
       // make sure to externalize deps that shouldn't be bundled
       // into your library
@@ -25,5 +34,11 @@ export default defineConfig(({ command}) => ({
         },
       },
     },
+  },
+  resolve: {
+    alias: {
+      "#": resolve("src"),
+      "~": resolve("lib"),
+    }
   }
 }))
