@@ -39,7 +39,6 @@ export default defineConfig(({ command}) => ({
   },
   resolve: {
     alias: {
-      "#": resolve("src"),
       "~": resolve("lib"),
     }
   },
