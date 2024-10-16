@@ -5,9 +5,23 @@
     "name": "Patrick Schilf",
     "email": "pschilf@unb.ca"
   },
-  "private": true,
-  "version": "0.0.0",
   "type": "module",
+  "private": true,
+  "version": "",
+  "release": {
+    "branches": [
+      "+([0-9]).x",
+      {
+        "name": "+([0-9]).x?(-alpha|-beta)",
+        "prerelease": true
+      }
+    ],
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/github"
+    ]
+  },
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
