@@ -30,6 +30,7 @@
     "lint:inspect": "npx @eslint/config-inspector@latest",
     "lint:commit": "npx eslint $(find $(git diff --diff-filter=d --name-only --cached | xargs) -type f -name \"*.ts\") --no-error-on-unmatched-pattern",
     "lint:fix": "npx eslint . --fix",
+    "test": "npm run test:unit && npm run test:unit:coverage",
     "test:unit": "vitest",
     "test:unit:coverage": "vitest run --coverage"
   },

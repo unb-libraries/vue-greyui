@@ -20,7 +20,7 @@ jobs:
     - name: Build
       run: npm run build
     - name: Test
-      run: npm test
+      run: npm test:unit
     - name: Semantic Release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
