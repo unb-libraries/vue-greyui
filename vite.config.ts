@@ -12,6 +12,7 @@ export default defineConfig(({ command}) => ({
     dts({
       outDir: "dist/types",
       include: ["lib/**/*.ts"],
+      exclude: ["lib/**/__tests__/**/*"],
       tsconfigPath: resolve(__dirname, "lib/tsconfig.json"),
     }),
   ],

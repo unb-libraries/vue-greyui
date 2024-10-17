@@ -18,20 +18,14 @@
       [
         "@semantic-release/github",
         {
-          "assets": [
-            "dist/**/*.(js|d.ts)",
-            "!__tests__/**/*",
-            "package?(-lock).json",
-            "LICENSE",
-            "README"
-          ]
+          "assets": "(dist/**/*.(js|d.ts))|(package?(-lock).json)|LICENSE|README.md"
         }
       ]
     ]
   },
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc -b && vite build",
+    "build": "vue-tsc -b && vite build && cp package.json package-lock.json LICENSE README.md dist/",
     "preview": "vite preview",
     "lint": "eslint .",
     "lint:inspect": "npx @eslint/config-inspector@latest",
