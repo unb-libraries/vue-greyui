@@ -18,14 +18,14 @@
       [
         "@semantic-release/github",
         {
-          "assets": "dist/"
+          "assets": "{dist/**/*,package.json,LICENSE,README.md}"
         }
       ]
     ]
   },
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc -b && vite build && cp package.json LICENSE README.md dist/",
+    "build": "vue-tsc -b && vite build",
     "preview": "vite preview",
     "lint": "eslint .",
     "lint:inspect": "npx @eslint/config-inspector@latest",
