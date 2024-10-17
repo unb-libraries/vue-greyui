@@ -49,6 +49,6 @@ export default defineConfig(({ command}) => ({
         100: true,
       },
     },
-    include: ["lib/**/__test__/*.{spec,test}.ts"],
+    include: ["lib/**/__tests__/*.{spec,test}.ts"],
   }
 }))
