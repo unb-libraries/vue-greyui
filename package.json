@@ -10,11 +10,7 @@
   "version": "",
   "release": {
     "branches": [
-      "+([0-9]).x",
-      {
-        "name": "+([0-9]).x-(alpha|beta)",
-        "prerelease": true
-      }
+      "main"
     ],
     "plugins": [
       "@semantic-release/commit-analyzer",
