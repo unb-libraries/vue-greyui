@@ -7,7 +7,7 @@
   },
   "type": "module",
   "private": true,
-  "version": "",
+  "version": "1.0.0",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/",
     "tag": "latest"
@@ -22,13 +22,13 @@
       [
         "@semantic-release/npm",
         {
-          "tarballDir": "dist"
+          "tarballDir": "."
         }
       ],
       [
         "@semantic-release/github",
         {
-          "assets": "dist/*.tgz"
+          "assets": "*.tgz"
         }
       ]
     ]
@@ -64,6 +64,9 @@
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "4.9.5"
   },
+  "files": [
+    "dist"
+  ],
   "main": "./dist/lib/vue-greyui.umd.js",
   "module": "./dist/lib/vue-greyui.js",
   "exports": {
