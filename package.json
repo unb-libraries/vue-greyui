@@ -16,16 +16,22 @@
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",
       [
+        "@semantic-release/npm",
+        {
+          "tarballDir": "dist"
+        }
+      ],
+      [
         "@semantic-release/github",
         {
-          "assets": "dist/"
+          "assets": "dist/*.tgz"
         }
       ]
     ]
   },
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc -b && vite build && cp package.json LICENSE README.md dist/",
+    "build": "vue-tsc -b && vite build",
     "preview": "vite preview",
     "lint": "eslint .",
     "lint:inspect": "npx @eslint/config-inspector@latest",
