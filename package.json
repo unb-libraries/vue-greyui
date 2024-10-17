@@ -18,7 +18,7 @@
       [
         "@semantic-release/github",
         {
-          "assets": "(dist/**/*.(js|d.ts))|(package?(-lock).json)|LICENSE|README.md"
+          "assets": "dist/"
         }
       ]
     ]
