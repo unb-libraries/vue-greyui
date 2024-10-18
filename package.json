@@ -7,27 +7,6 @@
   },
   "type": "module",
   "repository": "github:unb-libraries/vue-greyui",
-  "release": {
-    "branches": [
-      "main"
-    ],
-    "plugins": [
-      "@semantic-release/commit-analyzer",
-      "@semantic-release/release-notes-generator",
-      [
-        "@semantic-release/npm",
-        {
-          "tarballDir": "."
-        }
-      ],
-      [
-        "@semantic-release/github",
-        {
-          "assets": "*.tgz"
-        }
-      ]
-    ]
-  },
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
