@@ -21,7 +21,7 @@
     "lint:fix": "npx eslint . --fix",
     "test": "npm run test:unit",
     "test:unit": "npm run test:unit:watch -- run",
-    "test:unit:watch": "vitest --outputFile=./.vitest/unit/index.html"
+    "test:unit:watch": "vitest --outputFile=./vitest/unit/index.html"
   },
   "dependencies": {
     "@vitest/coverage-v8": "^2.1.1",
