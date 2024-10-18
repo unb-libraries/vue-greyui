@@ -1,5 +1,5 @@
 {
-  "name": "vue-greyui",
+  "name": "@unb-libraries/vue-greyui",
   "description": "UI composable library for Vue 3",
   "author": {
     "name": "Patrick Schilf",
