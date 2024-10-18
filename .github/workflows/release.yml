@@ -23,7 +23,7 @@ jobs:
       id: vitest
       run: npm run test:unit -- --coverage
     - name: Upload coverage report
-      if: steps.vitest.outcome == 'success' || steps.vitest.outcome == 'failure'
+      if: ${{ !cancelled() }}
       uses: actions/upload-artifact@v3
       with:
         name: vitest-report
