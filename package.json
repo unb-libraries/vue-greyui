@@ -7,7 +7,10 @@
   },
   "type": "module",
   "repository": "github:unb-libraries/vue-greyui",
-  "private": false,
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
