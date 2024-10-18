@@ -8,7 +8,7 @@
   "type": "module",
   "repository": "github:unb-libraries/vue-greyui",
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com/",
+    "registry": "https://registry.npmjs.org/",
     "tag": "latest"
   },
   "release": {
