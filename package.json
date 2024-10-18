@@ -6,10 +6,7 @@
     "email": "pschilf@unb.ca"
   },
   "type": "module",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/unb-libraries/vue-greyui.git"
-  },
+  "repository": "github:unb-libraries/vue-greyui",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/@unb-libraries",
     "tag": "latest"
