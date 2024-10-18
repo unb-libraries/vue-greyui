@@ -20,8 +20,10 @@ jobs:
     - name: Install dependencies
       run: npm ci
     - name: Test
+      id: vitest
       run: npm run test:unit -- --coverage
     - name: Upload coverage report
+      if: steps.vitest.outcome == 'success' || steps.vitest.outcome == 'failure'
       uses: actions/upload-artifact@v3
       with:
         name: vitest-report
