@@ -44,8 +44,11 @@ export default defineConfig(({ command}) => ({
     }
   },
   test: {
+    reporters: ["default", "html"],
     coverage: {
       include: ["lib/**/*.ts"],
+      reporter: ["text", "html"],
+      reportsDirectory: "./.vitest/coverage",
       thresholds: {
         100: true,
       },
