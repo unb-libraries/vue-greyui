@@ -1,0 +1,60 @@
+{
+  "name": "@unb-libraries/vue-greyui",
+  "description": "UI composable library for Vue 3",
+  "author": {
+    "name": "Patrick Schilf",
+    "email": "pschilf@unb.ca"
+  },
+  "type": "module",
+  "repository": "github:unb-libraries/vue-greyui",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "lint:inspect": "npx @eslint/config-inspector@latest",
+    "lint:commit": "npx eslint $(find $(git diff --diff-filter=d --name-only --cached | xargs) -type f -name \"*.ts\") --no-error-on-unmatched-pattern",
+    "lint:fix": "npx eslint . --fix",
+    "test": "npm run test:unit",
+    "test:unit": "npm run test:unit:watch -- run",
+    "test:unit:watch": "vitest --outputFile=./vitest/unit/index.html"
+  },
+  "dependencies": {
+    "@vitest/coverage-v8": "^2.1.1",
+    "vitest": "^2.1.1",
+    "vue": "^3.4.37"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.5",
+    "@vitejs/plugin-vue": "^5.1.2",
+    "@vitest/ui": "^2.1.3",
+    "eslint": "^8.57.0",
+    "eslint-plugin-vue": "^9.28.0",
+    "typescript": "^5.5.3",
+    "typescript-eslint": "^8.7.0",
+    "vite": "^5.4.1",
+    "vite-plugin-dts": "^4.2.2",
+    "vue-tsc": "^2.0.29"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "4.9.5"
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/lib/vue-greyui.umd.js",
+  "module": "./dist/lib/vue-greyui.js",
+  "exports": {
+    ".": {
+      "import": "./dist/lib/vue-greyui.js",
+      "require": "./dist/lib/vue-greyui.umd.js",
+      "types": "./dist/types/index.d.ts"
+    }
+  },
+  "types": "./dist/types/index.d.ts",
+  "typings": "./dist/types/index.d.ts"
+}
