@@ -1,5 +1,5 @@
 {
-  "name": "@unb-libraries/vue-greyui",
+  "name": "vue-greyui",
   "description": "UI composable library for Vue 3",
   "author": {
     "name": "Patrick Schilf",
@@ -8,7 +8,7 @@
   "type": "module",
   "repository": "github:unb-libraries/vue-greyui",
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com/@unb-libraries",
+    "registry": "https://npm.pkg.github.com/",
     "tag": "latest"
   },
   "release": {
