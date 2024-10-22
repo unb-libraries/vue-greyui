@@ -37,11 +37,12 @@ export default teslint.config(
   },
   {
     files: [
-      `lib/**/__test__/*.{spec,test}.ts`,
+      `lib/**/__tests__/*.{spec,test}.ts`,
     ],
     rules: {
       "@typescript-eslint/no-unused-vars": `off`,
       "@typescript-eslint/no-empty-function": `off`,
+      "vue/one-component-per-file": `off`,
     }
   }
 )
