@@ -4,4 +4,5 @@ test('export all composables except useInput', async () => {
   const index = await import('../index')
   expect(index).toHaveProperty('useInputText')
   expect(index).toHaveProperty('useInputValidation')
+  expect(index).toHaveProperty('useInputAttrs')
 })
