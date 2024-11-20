@@ -6,4 +6,5 @@ test('export all composables except useInput', async () => {
   expect(index).toHaveProperty('useInputText')
   expect(index).toHaveProperty('useInputNumber')
   expect(index).toHaveProperty('useInputValidation')
+  expect(index).toHaveProperty('useDataProvider')
 })
