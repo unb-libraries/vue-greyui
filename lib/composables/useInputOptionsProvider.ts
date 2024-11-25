@@ -6,8 +6,8 @@ export type Option<T extends Record<string, unknown> = Record<string, unknown>> 
 export type OptObject<T extends Option> = Exclude<T, string | OptArr>
 
 export interface InputOptionsProviderOptions<T extends Option, S> {
-  id: (item: OptObject<T>) => string
-  label: (item: T) => S
+  id: (item: OptObject<T>) => string | undefined
+  label: (item: T) => S | undefined
 }
 
 export type InputOptionsProvider<S> = Omit<DataProvider<Option>, "data"> & {

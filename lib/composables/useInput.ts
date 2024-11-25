@@ -33,7 +33,7 @@ export default function useInput<T = unknown>(props: InputProps<T>, emits: Emit<
     initial = props.modelValue
   })
 
-  const value = useModel(props, 'modelValue')
+  const value = useModel({ ...props, modelValue: props.modelValue ?? emptyValue }, 'modelValue')
   
   return {
     value,
