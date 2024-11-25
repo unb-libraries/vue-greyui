@@ -9,11 +9,38 @@ Install by running the following command from inside your project folder:
 ```sh
 npm install -D @unb-libraries/vue-greyui
 ```
-# Vue 3 + TypeScript + Vite
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+## Features
 
-Learn more about the recommended Project Setup and IDE Support in the [Vue Docs TypeScript Guide](https://vuejs.org/guide/typescript/overview.html#project-setup).
+GreyUI provides the following composables:
+
+- [useDataProvider](#useDataprovider)
+
+### useDataProvider
+Define and reactively manipulate data provider.
+
+```typescript
+import { useDataProvider } from "@unb-libraries/vue-greyui"
+
+const { data, add, filter, remove, set, sort } = useDataProvider(["grey", "dark-grey", "light-grey"])
+
+add("ultra-light-grey")
+// data.value => ["grey", "dark-grey", "light-grey", "medium-grey"]
+
+filter((color) => color.indexOf("-") < 0)
+// data.value => ["grey"]
+filter(() => true)
+// data.value => ["grey", "dark-grey", "light-grey", "ultra-light-grey"]
+
+remove(3)
+// data.value => ["grey", "dark-grey", "light-grey"]
+
+set(["white", "grey", "black"])
+// data.value => ["white", "grey", "black"]
+
+sort((a, b) => a < b ? -1 : b < a ? 1 : 0)
+// data.value => ["black", "grey", "white"]
+```
 
 ## Testing
 
