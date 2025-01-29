@@ -1,4 +1,5 @@
 export * from "./useInputAttrs"
+export * from "./useInputBoolean"
 export * from "./useInputText"
 export * from "./useInputNumber"
 export * from "./useInputValidation"
