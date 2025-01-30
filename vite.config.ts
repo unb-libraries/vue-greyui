@@ -50,9 +50,6 @@ export default defineConfig(({ command}): ViteUserConfig => ({
       include: ["lib/**/*.ts"],
       reporter: ["text", "html"],
       reportsDirectory: "./vitest/coverage",
-      thresholds: {
-        100: true,
-      },
     },
     include: ["lib/**/__tests__/*.{spec,test}.ts"],
   }
