@@ -1,10 +1,10 @@
 import { watch } from "vue"
 import useInput from "./useInput"
 import { useInputOptionsProvider } from "./useInputOptionsProvider"
+import type { Cardinality } from "."
 import type { Emit, InputEmits, InputProps, Input, InputOptions } from "./useInput"
 import type { InputOptionsProvider, InputOptionsProviderOptions, Option, OptObject } from "./useInputOptionsProvider"
 
-type Cardinality = "single" | "many"
 type TData<C extends Cardinality = "single"> = C extends "single" ? string : string[]
 
 export interface InputSelectProps<O extends Option = Option, C extends Cardinality = "single", S = string> extends InputProps<TData<C>> {
