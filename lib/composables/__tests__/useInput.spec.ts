@@ -25,49 +25,35 @@ const Input = defineComponent({
 
 describe('useInput', () => {
   test('value', async () => {
-    const wrapper = mount(Input, { props: { modelValue: undefined }})
-    
-    await wrapper.get('[data-test="input"]').setValue('grey')
-    
-    expect(wrapper.emitted()).toHaveProperty('update:modelValue')
-    expect(wrapper.emitted('update:modelValue')).toHaveLength(1)
-    expect(wrapper.emitted('update:modelValue')[0]).toEqual(['grey'])
-
-    await wrapper.setProps({ modelValue: 'grey' })
-    expect(wrapper.get('[data-test="value"]').text()).toBe('grey')
+    const wrapper = mount(Input, { props: { modelValue: undefined, "onUpdate:modelValue": (value) => wrapper.setProps({ modelValue: value }) }})
+    for (const char of "grey") {
+      await wrapper.get('[data-test="input"]').setValue((wrapper.props("modelValue") ?? "") + char)
+    }
+    expect(wrapper.props("modelValue")).toBe('grey')
   })
 
 
   test('clear value', async () => {
-    const wrapper = mount(Input, { props: { modelValue: 'grey' }})
+    const wrapper = mount(Input, { props: { modelValue: 'grey', "onUpdate:modelValue": (value) => wrapper.setProps({ modelValue: value }) }})
     
     await wrapper.get('[data-test="clear"]').trigger('click')
-    
-    expect(wrapper.emitted()).toHaveProperty('update:modelValue')
-    expect(wrapper.emitted('update:modelValue')).toHaveLength(1)
-    expect(wrapper.emitted('update:modelValue')[0]).toEqual([''])
+    expect(wrapper.props("modelValue")).toBe('')
   })
 
   describe('unset value', () => {
     it('should reset to null if initially not empty', async () => {
-      const wrapper = mount(Input, { props: { modelValue: 'grey' }})
+      const wrapper = mount(Input, { props: { modelValue: 'grey', "onUpdate:modelValue": (value) => wrapper.setProps({ modelValue: value }) }})
       
       await wrapper.get('[data-test="unset"]').trigger('click')
-      
-      expect(wrapper.emitted()).toHaveProperty('update:modelValue')
-      expect(wrapper.emitted('update:modelValue')).toHaveLength(1)
-      expect(wrapper.emitted('update:modelValue')[0]).toEqual([null])
+      expect(wrapper.props("modelValue")).toBe(null)
     })
-
+    
     it('should reset to undefined if initially empty', async () => {
-      const wrapper = mount(Input, { props: { modelValue: undefined }})
+      const wrapper = mount(Input, { props: { modelValue: undefined, "onUpdate:modelValue": (value) => wrapper.setProps({ modelValue: value }) }})
       
       await wrapper.get('[data-test="input"]').setValue('grey')
       await wrapper.get('[data-test="unset"]').trigger('click')
-      
-      expect(wrapper.emitted()).toHaveProperty('update:modelValue')
-      expect(wrapper.emitted('update:modelValue')).toHaveLength(2)
-      expect(wrapper.emitted('update:modelValue')).toEqual([['grey'], [undefined]])
+      expect(wrapper.props("modelValue")).toBe(undefined)
     })
   })
 })

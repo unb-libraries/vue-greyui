@@ -1,5 +1,5 @@
-import { onMounted, useModel } from "vue"
-import type { ModelRef } from "vue"
+import { computed, onMounted } from "vue"
+import type { WritableComputedRef } from "vue"
 
 export interface InputProps<T = unknown> {
   modelValue?: T
@@ -17,7 +17,7 @@ export interface InputOptions<T = unknown> {
 }
 
 export interface Input<T = unknown> {
-  value: ModelRef<T>
+  value: WritableComputedRef<T>
   clear: () => void
   unset: () => void
 }
@@ -33,7 +33,10 @@ export default function useInput<T = unknown>(props: InputProps<T>, emits: Emit<
     initial = props.modelValue
   })
 
-  const value = useModel({ ...props, modelValue: props.modelValue ?? emptyValue }, 'modelValue')
+  const value = computed({
+    get: () => props.modelValue ?? emptyValue,
+    set: (newValue: T) => emits('update:modelValue', newValue)
+  })
   
   return {
     value,

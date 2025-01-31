@@ -98,23 +98,21 @@ describe("useInputSelect", () => {
 
   describe("Set", () => {
     test("Single-value", async () => {
-      const wrapper = mount(SelectOne(), { props: { options }})
+      const wrapper = mount(SelectOne(), { props: { options, "onUpdate:modelValue": (value) => wrapper.setProps({ modelValue: value }) }})
       
       await wrapper.get('[data-test="input"]').setValue("dark-grey")
       
-      expect(wrapper.emitted()).toHaveProperty("update:modelValue")
-      expect(wrapper.emitted("update:modelValue")).toEqual([["dark-grey"]])
+      expect(wrapper.props("modelValue")).toEqual("dark-grey")
       expect(wrapper.emitted()).toHaveProperty("select")
       expect(wrapper.emitted("select")).toEqual([[["dark-grey", "Dark grey"], ["", "- Select -"]]])
     })
 
     test("Multi-value", async () => {
-      const wrapper = mount(SelectMany(), { props: { options }})
+      const wrapper = mount(SelectMany(), { props: { options, "onUpdate:modelValue": (value) => wrapper.setProps({ modelValue: value }) }})
       
       await wrapper.get('[data-test="input"]').setValue(["dark-grey", "grey"])
       
-      expect(wrapper.emitted()).toHaveProperty("update:modelValue")
-      expect(wrapper.emitted("update:modelValue")).toEqual([[["grey", "dark-grey"]]])
+      expect(wrapper.props("modelValue")).toEqual(["grey", "dark-grey"])
       expect(wrapper.emitted()).toHaveProperty("select")
       expect(wrapper.emitted("select")).toEqual([[[["grey", "grey"], ["dark-grey", "Dark grey"]], [], [["grey", "grey"], ["dark-grey", "Dark grey"]]]])
     })
@@ -122,23 +120,21 @@ describe("useInputSelect", () => {
 
   describe("Select", () => {
     test("Single-value", async () => {
-      const wrapper = mount(SelectOne(), { props: { options }})
+      const wrapper = mount(SelectOne(), { props: { options, "onUpdate:modelValue": (value) => wrapper.setProps({ modelValue: value }) }, attachTo: document.body })
       
       await wrapper.get('[data-test="select"]').trigger("click")
       
-      expect(wrapper.emitted()).toHaveProperty("update:modelValue")
-      expect(wrapper.emitted("update:modelValue")).toEqual([["grey"]])
+      expect(wrapper.props("modelValue")).toEqual("grey")
       expect(wrapper.emitted()).toHaveProperty("select")
       expect(wrapper.emitted("select")).toEqual([[["grey", "grey"], ["", "- Select -"]]])
     })
 
     test("Multi-value", async () => {
-      const wrapper = mount(SelectMany(), { props: { modelValue: ["dark-grey"], options }})
+      const wrapper = mount(SelectMany(), { props: { modelValue: ["dark-grey"], options, "onUpdate:modelValue": (value) => wrapper.setProps({ modelValue: value }) }})
       
       await wrapper.get('[data-test="select"]').trigger("click")
       
-      expect(wrapper.emitted()).toHaveProperty("update:modelValue")
-      expect(wrapper.emitted("update:modelValue")).toEqual([[["grey", "dark-grey"]]])
+      expect(wrapper.props("modelValue")).toEqual(["grey", "dark-grey"])
       expect(wrapper.emitted()).toHaveProperty("select")
       expect(wrapper.emitted("select")).toEqual([[[["grey", "grey"]], [], [["grey", "grey"], ["dark-grey", "Dark grey"]]]])
     })
@@ -146,13 +142,12 @@ describe("useInputSelect", () => {
 
   describe("Toggle", () => {
     test("Multi-value", async () => {
-      const wrapper = mount(SelectMany(), { props: { options }})
+      const wrapper = mount(SelectMany(), { props: { options, "onUpdate:modelValue": (value) => wrapper.setProps({ modelValue: value }) }})
       
       await wrapper.get('[data-test="toggle"]').trigger("click")
       await wrapper.get('[data-test="toggle"]').trigger("click")
       
-      expect(wrapper.emitted()).toHaveProperty("update:modelValue")
-      expect(wrapper.emitted("update:modelValue")).toEqual([[["grey"]], [[]]])
+      expect(wrapper.props("modelValue")).toEqual([])
       expect(wrapper.emitted()).toHaveProperty("select")
       expect(wrapper.emitted("select")).toEqual([[[["grey", "grey"]], [], [["grey", "grey"]]], [[], [["grey", "grey"]], []]])
     })
@@ -161,22 +156,22 @@ describe("useInputSelect", () => {
   describe("Unselect", () => {
     test("Single-value", async () => {
       const wrapper = mount(SelectOne(), { props: { modelValue: "grey", options }})
+      await wrapper.setProps({ "onUpdate:modelValue": (value) => wrapper.setProps({ modelValue: value }) })
       
       await wrapper.get('[data-test="unselect"]').trigger("click")
       
-      expect(wrapper.emitted()).toHaveProperty("update:modelValue")
-      expect(wrapper.emitted("update:modelValue")).toEqual([[""]])
+      expect(wrapper.props("modelValue")).toEqual("")
       expect(wrapper.emitted()).toHaveProperty("select")
       expect(wrapper.emitted("select")).toEqual([[["", "- Select -"], ["grey", "grey"]]])
     })
 
     test("Multi-value", async () => {
       const wrapper = mount(SelectMany(), { props: { modelValue: ["grey", "dark-grey"], options }})
+      await wrapper.setProps({ "onUpdate:modelValue": (value) => wrapper.setProps({ modelValue: value }) })
       
       await wrapper.get('[data-test="unselect"]').trigger("click")
       
-      expect(wrapper.emitted()).toHaveProperty("update:modelValue")
-      expect(wrapper.emitted("update:modelValue")).toEqual([[["dark-grey"]]])
+      expect(wrapper.props("modelValue")).toEqual(["dark-grey"])
       expect(wrapper.emitted()).toHaveProperty("select")
       expect(wrapper.emitted("select")).toEqual([[[], [["grey", "grey"]], [["dark-grey", "Dark grey"]]]])
     })

@@ -85,25 +85,22 @@ describe("useInputTable", () => {
   })
 
   test("select row", async () => {
-    const wrapper = mount(TableInput(), { props: { columns, rows }})
+    const wrapper = mount(TableInput(), { props: { columns, rows, "onUpdate:modelValue": (value) => wrapper.setProps({ modelValue: value }) }})
     
     await wrapper.get('[data-test="tr-grey"]').trigger('click')
-    
-    expect(wrapper.emitted()).toHaveProperty("update:modelValue")
-    expect(wrapper.emitted("update:modelValue")).toHaveLength(1)
-    expect(wrapper.emitted("update:modelValue")[0]).toEqual(["grey"])
+    expect(wrapper.props("modelValue")).toBe("grey")
+    await wrapper.get('[data-test="tr-dark-grey"]').trigger('click')
+    expect(wrapper.props("modelValue")).toBe("dark-grey")
   })
 
   test("select multiple rows", async () => {
-    const wrapper = mount(TableInput({ cardinality: "many" }), { props: { columns, rows }})
+    const wrapper = mount(TableInput({ cardinality: "many" }), { props: { columns, rows, "onUpdate:modelValue": (value) => wrapper.setProps({ modelValue: value }) }})
     
     await wrapper.get('[data-test="tr-grey"]').trigger('click')
-    wrapper.setProps({ modelValue: ["grey"] })
     await wrapper.get('[data-test="tr-dark-grey"]').trigger('click')
-
-    expect(wrapper.emitted()).toHaveProperty("update:modelValue")
-    expect(wrapper.emitted("update:modelValue")).toHaveLength(2)
-    expect(wrapper.emitted("update:modelValue")[0]).toEqual([["grey"]])
-    expect(wrapper.emitted("update:modelValue")[1]).toEqual([["grey", "dark-grey"]])
+    
+    expect(wrapper.props("modelValue")).toEqual(["grey", "dark-grey"])
+    expect(wrapper.emitted()).toHaveProperty("select")
+    expect(wrapper.emitted("select")).toEqual([[[], [["grey", "grey"], ["dark-grey", "Dark grey"]], [["grey", "grey"]]]])
   })
 })

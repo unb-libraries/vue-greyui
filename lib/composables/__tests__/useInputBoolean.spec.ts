@@ -21,15 +21,11 @@ const Input = defineComponent({
 
 describe('useInputBoolean', () => {
   test('toggle', async () => {
-    const wrapper = mount(Input, { props: { modelValue: undefined }})
+    const wrapper = mount(Input, { props: { modelValue: undefined, "onUpdate:modelValue": (value) => wrapper.setProps({ modelValue: value }) }})
     
     await wrapper.get('[data-test="input"]').trigger('change')
-    await wrapper.setProps({ modelValue: true })
+    expect(wrapper.props("modelValue")).toBe(true)
     await wrapper.get('[data-test="input"]').trigger('change')
-
-    expect(wrapper.emitted()).toHaveProperty('update:modelValue')
-    expect(wrapper.emitted('update:modelValue')).toHaveLength(2)
-    expect(wrapper.emitted('update:modelValue')[0]).toEqual([true])
-    expect(wrapper.emitted('update:modelValue')[1]).toEqual([false])
+    expect(wrapper.props("modelValue")).toBe(false)
   })
 })

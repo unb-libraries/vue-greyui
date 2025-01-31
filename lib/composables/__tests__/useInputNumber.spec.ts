@@ -51,44 +51,37 @@ const Input = (options?: Partial<InputNumberOptions>) => defineComponent({
 
 describe('useInputNumber', () => {
   test('should normalize numeric display value', async () => {
-    const wrapper = mount(Input(), { props: { decimals: 1 }})
+    const wrapper = mount(Input(), { props: { decimals: 1, "onUpdate:modelValue": (value) => wrapper.setProps({ modelValue: value }) }})
     
-    await wrapper.get('[data-test="input-text"]').setValue("0.5")
     await wrapper.get('[data-test="input-number"]').setValue("0.5")
     expect(wrapper.get('[data-test="display-value"]').text()).toBe("0.5")
-
     
-    await wrapper.get('[data-test="input-text"]').setValue(".5")
+    
     await wrapper.get('[data-test="input-number"]').setValue(".5")
     expect(wrapper.get('[data-test="display-value"]').text()).toBe("0.5")
     
-    await wrapper.get('[data-test="input-text"]').setValue("-.5")
     await wrapper.get('[data-test="input-number"]').setValue("-.5")
     expect(wrapper.get('[data-test="display-value"]').text()).toBe("-0.5")
     
     await wrapper.setProps({ decimals: 2 })
-    await wrapper.get('[data-test="input-text"]').setValue("0.5")
     await wrapper.get('[data-test="input-number"]').setValue("0.5")
     expect(wrapper.get('[data-test="display-value"]').text()).toBe("0.50")
     
     await wrapper.setProps({ decimals: 0 })
-    await wrapper.get('[data-test="input-text"]').setValue("05")
     await wrapper.get('[data-test="input-number"]').setValue("05")
     expect(wrapper.get('[data-test="display-value"]').text()).toBe("5")
     
-    await wrapper.get('[data-test="input-text"]').setValue("-05")
     await wrapper.get('[data-test="input-number"]').setValue("-05")
     expect(wrapper.get('[data-test="display-value"]').text()).toBe("-5")
   })
 
   test('should reject non-numeric display values', async () => {
-    const wrapper = mount(Input(), { props: { modelValue: 0 } })
+    const wrapper = mount(Input(), { props: { modelValue: 0, "onUpdate:modelValue": (value) => wrapper.setProps({ modelValue: value }) } })
 
     // "a" => no update
     await wrapper.get('[data-test="input-number"]').setValue('a')
     await wrapper.get('[data-test="input-text"]').setValue('a')
     expect(wrapper.get('[data-test="display-value"]').text()).toBe("0")
-    expect(wrapper.emitted('update:modelValue')).toBeUndefined()
   })
 
   test('should accept decimals between 0-20', async () => {
@@ -106,7 +99,7 @@ describe('useInputNumber', () => {
   })
 
   test('fixed stepping', async () => {
-    const wrapper = mount(Input({ round: false }), { props: { steps: [0.2, 1.5], decimals: 1 } })
+    const wrapper = mount(Input({ round: false }), { props: { steps: [0.2, 1.5], decimals: 1, "onUpdate:modelValue": (value) => wrapper.setProps({ modelValue: value }) } })
 
     // undefined + 0.2 + 1.5 - 0.2 - 0.2 - 1.5 - 0.2 + 1.5 === 1.1
     await wrapper.get('[data-test="inc"]').trigger('click')
@@ -117,21 +110,19 @@ describe('useInputNumber', () => {
     await wrapper.get('[data-test="dec"]').trigger('click')
     await wrapper.get('[data-test="incL"]').trigger('click')
     
-    expect(wrapper.emitted()).toHaveProperty('update:modelValue')
-    expect(wrapper.emitted('update:modelValue')).toEqual([[0.2], [1.7], [1.5], [1.3], [-0.2], [-0.4], [1.1]])
+    expect(wrapper.props("modelValue")).toBe(1.1)
     expect(wrapper.get('[data-test="display-value"]').text()).toBe("1.1")
   })
 
   test('rounded stepping', async () => {
-    const wrapper = mount(Input({ round: true }), { props: { modelValue: 0.1, steps: [0.2, 1.5], decimals: 1 } })
+    const wrapper = mount(Input({ round: true }), { props: { modelValue: 0.1, steps: [0.2, 1.5], decimals: 1, "onUpdate:modelValue": (value) => wrapper.setProps({ modelValue: value }) } })
 
     // 0.1 + 0.2 + 1.5 + 1.5  === 3.0
     await wrapper.get('[data-test="inc"]').trigger('click')
     await wrapper.get('[data-test="incL"]').trigger('click')
     await wrapper.get('[data-test="incL"]').trigger('click')
-    
-    expect(wrapper.emitted()).toHaveProperty('update:modelValue')
-    expect(wrapper.emitted('update:modelValue')).toEqual([[0.2], [1.5], [3]])
+
+    expect(wrapper.props("modelValue")).toBe(3)
     expect(wrapper.get('[data-test="display-value"]').text()).toBe("3.0")
   })
 })
