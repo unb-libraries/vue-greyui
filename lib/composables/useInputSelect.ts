@@ -1,4 +1,4 @@
-import { watch } from "vue"
+import { computed, watch } from "vue"
 import useInput from "./useInput"
 import { useInputOptionsProvider } from "./useInputOptionsProvider"
 import type { Cardinality } from "."
@@ -18,19 +18,23 @@ export interface InputSelectEmits<S = string, C extends Cardinality = "single"> 
 
 export interface InputSelectOptions<C extends Cardinality = "single"> extends InputOptions<C extends "single" ? "" : []> {
   cardinality: C
+  conciseSelection: boolean
 }
 
-export interface InputSelect<C extends Cardinality = "single", S = string> extends Input<TData<C>> {
-  isSelected: (option: string) => boolean
-  provider: InputOptionsProvider<S>
-  select: (option: string) => void
-  toggle: (option: string) => void
-  unselect: (option: string) => void
-}
+export type InputSelect<O extends Partial<InputSelectOptions<Cardinality>> = InputSelectOptions<"single">, S = string> = O extends Partial<InputSelectOptions<infer C>>
+  ? Input<O["conciseSelection"] extends true ? TData<C> : Record<string, boolean>> & {
+    isSelected: (option: string) => boolean
+    provider: InputOptionsProvider<S>
+    select: (option: string) => void
+    toggle: (option: string) => void
+    unselect: (option: string) => void
+  }
+  : InputSelect<InputSelectOptions<"single">, S>
 
-export function useInputSelect <O extends Option = Option<Record<string, string>>, C extends Cardinality = "single", S = string>(props: InputSelectProps<O, C, S>, emits: Emit<InputSelectEmits<S, C>>, options?: Partial<Omit<InputSelectOptions<C>, "id" | "label">>): InputSelect<C, S> {
-  const { cardinality, emptyValue, ...config } = {
+export function useInputSelect <O extends Option = Option<Record<string, string>>, C extends Cardinality = "single", I extends Partial<InputSelectOptions<C>> = InputSelectOptions<C>, S = string>(props: InputSelectProps<O, C, S>, emits: Emit<InputSelectEmits<S, C>>, options?: Partial<InputSelectOptions<C>>): InputSelect<I, S> {
+  const { cardinality, conciseSelection: selectedValuesOnly, emptyValue, ...config } = {
     cardinality: Array.isArray(props.modelValue) || (Array.isArray(options?.emptyValue) && !options.emptyValue.length) ? "many" : "single",
+    conciseSelection: options.conciseSelection ?? true,
     emptyValue: Array.isArray(props.modelValue) || options?.cardinality === "many" ? [] as string[] : "",
     ...options ?? {}
   } as InputSelectOptions<C>
@@ -91,12 +95,21 @@ export function useInputSelect <O extends Option = Option<Record<string, string>
   })
 
   return {
-    value: selection,
+    value: selectedValuesOnly
+      ? selection
+      : computed({
+        get: () => Object.fromEntries(provider.options.value.map(([id]) => [id, selection.value.includes(id)])),
+        set: (newValue: [string, boolean][]) => {
+          selection.value = cardinality === "single"
+            ? newValue.find(([, selected]) => selected)?.[0] as TData<C>
+            : newValue.filter(([, selected]) => selected).map(([id]) => id) as TData<C>
+        }
+      }),
     provider,
     isSelected,
     select,
     toggle: (option: string) => isSelected(option) ? unselect(option) : select(option),
     unselect,
     ...input,
-  }
+  } as InputSelect<I, S>
 }
