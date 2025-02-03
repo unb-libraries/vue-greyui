@@ -43,7 +43,8 @@ export function useInputSelect <O extends Option = Option<Record<string, string>
   const provider = useInputOptionsProvider<S, O>(props.options, {
     id: (item) => typeof props.id === "function"
       ? props.id(item as OptObject<O>) : props.id && item[props.id]
-        ? `${item[props.id]}` : undefined,
+        ? `${item[props.id]}` : typeof item === "object"
+          ? `${item[Object.keys(item)[0]]}` : `${item}`,
     label: (item) => {
       if (typeof props.label === "function" && !["string", "array"].includes(typeof item)) {
         return props.label(item)
