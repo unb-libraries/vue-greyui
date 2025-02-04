@@ -91,7 +91,7 @@ export function useInputSelect <O extends Option = Option<Record<string, string>
       const removed = prevSelection.filter((value) => !newSelection.includes(value))
       emits("select", ...[added.map(toOption), removed.map(toOption), newSelection.map(toOption)] as TArgs)
     } else if (!Array.isArray(newSelection) && !Array.isArray(prevSelection)) {
-      emits("select", ...[toOption(newSelection), toOption(prevSelection)] as TArgs)
+      emits("select", ...[toOption(newSelection) ?? emptyValue, toOption(prevSelection) ?? emptyValue] as TArgs)
     }
   })
 

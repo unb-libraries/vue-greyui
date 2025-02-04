@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest"
 import { useInputOptionsProvider } from "../useInputOptionsProvider"
 import type { Option, OptArr, OptObject } from "../useInputOptionsProvider"
 
-describe('useDataProvider', () => {
+describe('useInputOptionsProvider', () => {
   type Item = Option<{ id: string, uid: string, label: string, color: string }>
   const items: [string, OptArr, OptObject<Item>] = [
     "grey",
