@@ -3,6 +3,7 @@ import { computed, ref, type Ref } from "vue"
 export interface DataProvider<T = unknown> {
   data: Ref<T[]>
   add: (item: T) => void
+  has: (item: T) => boolean
   filter: (fn: (item: T) => boolean) => void
   remove: (index: number) => void
   set: (items: T[]) => void
@@ -25,6 +26,7 @@ export function useDataProvider<T = unknown>(data: T[]): DataProvider<T> {
       return data
     }),
     add: (item) => items.value = [...items.value as T[], item],
+    has: (item) => (items.value as T[]).includes(item),
     filter: (fn) => filter.value = fn,
     remove: (index) => items.value = items.value.filter((_, i, arr) => index >= 0 ? i !== index : i !== arr.length + index),
     set: (data) => items.value = data,

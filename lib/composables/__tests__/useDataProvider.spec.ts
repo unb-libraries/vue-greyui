@@ -16,6 +16,11 @@ describe('useDataProvider', () => {
     expect(provider.data.value).toHaveLength(5)
     expect(provider.data.value.at(-1)).toBe(item)
   })
+  
+  test("has", () => {
+    expect(provider.has("grey")).toBe(true)
+    expect(provider.has("black")).toBe(false)
+  })
 
   test("filter", () => {
     provider.filter(item => !/.*-.*/.test(item))
