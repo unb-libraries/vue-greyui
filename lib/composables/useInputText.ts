@@ -1,14 +1,11 @@
 import useInput from "./useInput"
+import type { Cardinality, TCardinality } from "."
 import type { InputProps, InputEmits, InputOptions, Emit, Input } from "./useInput"
 import { type Ref, ref } from "vue"
 
-export type TInputText<T extends boolean = false> = T extends true ? string[] : string
-type M<T extends boolean = false> = TInputText<T>
-export type InputTextProps<T extends string | string[] = string> = InputProps<T>
-export type InputTextEmits<T extends string | string[] = string> = InputEmits<T>
-export interface InputTextOptions<T extends boolean = false> extends InputOptions<T extends false ? "" : []> {
-  multi: T
-}
+export type InputTextProps<C extends Cardinality = "single"> = InputProps<TCardinality<string, C>> & { cardinality?: C }
+export type InputTextEmits<C extends Cardinality = "single"> = InputEmits<TCardinality<string, C>>
+export type InputTextOptions<C extends Cardinality = "single"> = InputOptions<C extends "single" ? "" : []>
 
 interface InputText extends ReturnType<typeof useInput<string>> {
   update: (newValue?: string) => void
@@ -43,18 +40,16 @@ function useInputStringList(input: ReturnType<typeof useInput<string[]>>): Input
   }
 }
 
-export function useInputText<T extends boolean = false>(props: InputTextProps<M<T>>, emits: Emit<InputTextEmits<M<T>>>, options?: Partial<InputTextOptions<T>>): T extends false ? InputText : InputTextArray {
-  const { emptyValue, multi } = {
-    multi: false as T,
-    emptyValue: options?.multi ? [] as string[] : "",
+export function useInputText<C extends Cardinality = "single">(props: InputTextProps<C>, emits: Emit<InputTextEmits<C>>, options?: Partial<InputTextOptions<C>>): C extends "single" ? InputText : InputTextArray {
+  const cardinality = props.cardinality ?? "single"
+  const { emptyValue } = {
+    emptyValue: cardinality === "many" ? [] as string[] : "",
     ...options,
   }
   
-  const input = useInput<M<T>>(props, emits, {
-    emptyValue,
-  } as InputOptions<M<T>>)
+  const input = useInput<TCardinality<string, C>>(props, emits, { emptyValue } as InputOptions<TCardinality<string, C>>)
   
-  return (!multi
+  return (cardinality === "single"
     ? useInputString(input as Input<string>)
-    : useInputStringList(input as Input<string[]>)) as T extends false? InputText : InputTextArray
+    : useInputStringList(input as Input<string[]>)) as C extends "single" ? InputText : InputTextArray
 }

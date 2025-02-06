@@ -2,6 +2,7 @@ import { mount } from "@vue/test-utils"
 import { describe, expect, test, vi } from "vitest"
 import { defineComponent } from "vue"
 import { useInputText } from "../useInputText"
+import type { InputTextProps} from "../useInputText";
 import type { Validator } from "../useInputValidation";
 
 const InputOne = defineComponent({
@@ -11,10 +12,15 @@ const InputOne = defineComponent({
       required: false,
       default: undefined,
     },
+    cardinality: {
+      type: String,
+      required: false,
+      default: "single",
+    }
   },
   emits: ['update:modelValue'],
   setup(props, { emit }) {
-    return useInputText(props, emit, { emptyValue: '' })
+    return useInputText(props as InputTextProps<"single">, emit, { emptyValue: '' })
   },
   template: `
     <input v-model="value" type="text" data-test="input" />
@@ -29,6 +35,11 @@ const InputMany = defineComponent({
       required: false,
       default: undefined,
     },
+    cardinality: {
+      type: String,
+      required: false,
+      default: "many",
+    },
     validators: {
       type: Array<Validator<string[]>>,
       required: false,
@@ -37,7 +48,7 @@ const InputMany = defineComponent({
   },
   emits: ['update:modelValue', 'validated'],
   setup(props, { emit }) {
-    return useInputText(props, emit, { multi: true, emptyValue: [] })
+    return useInputText(props as InputTextProps<"many">, emit, { emptyValue: [] })
   },
   template: `
     <input v-model="newValue" type="text" data-test="input" />
@@ -89,21 +100,5 @@ describe('useInputText', () => {
     expect(wrapper.emitted('update:modelValue')).toHaveLength(1)
     expect(wrapper.emitted('update:modelValue')[0]).toEqual([['light-grey', 'grey']])
   })
-
-  // test('validate', async () => {
-  //   const validator = vi.fn<Validator<string[]>>((_: string[]) => true)
-  //   const wrapper = mount(InputMany, {
-  //     props: {
-  //       modelValue: ['grey'],
-  //       validators: [validator],
-  //     }
-  //   })
-    
-  //   await wrapper.get('[data-test="input"]').setValue('dark-grey')
-  //   await wrapper.get('[data-test="add"]').trigger('click')
-
-  //   expect(validator).toHaveBeenCalledTimes(1)
-  //   expect(validator).toHaveBeenCalledWith(['grey', 'dark-grey'])
-  // })
 })
 
