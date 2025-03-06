@@ -1,97 +1,95 @@
-import { mount } from "@vue/test-utils"
-import { describe, expect, test } from "vitest"
-import { defineComponent } from "vue"
-import { useInputSelect } from "../useInputSelect"
+import { mount } from '@vue/test-utils'
+import { describe, expect, test, vi } from 'vitest'
+import { defineComponent } from 'vue'
+import { useDataProvider } from '../useDataProvider'
+import { useInputSelect } from '../useInputSelect'
 import type { Cardinality } from ".."
-import type { InputSelectOptions } from "../useInputSelect"
-import type { Option } from "../useInputOptionsProvider"
 
-type SelectOption = Option<{ cid: string, uid: string, name: string }>
-const Select = (options?: Partial<InputSelectOptions<Cardinality>>) => defineComponent({
+vi.mock("../useDataProvider", () => {
+  return {
+    useDataProvider: (data: string[]) => ({
+      data: { value: data },
+      add: (item: string) => data.push(item),
+      has: (item: string) => data.includes(item),
+      filter: () => {},
+      remove: (index: number) => data.splice(index, 1),
+      set: (newData: string[]) => data = newData,
+      sort: () => {}
+    }),
+  }
+})
+
+const Input = (options?: { cardinality: Cardinality }) => defineComponent({
   props: {
     modelValue: {
       type: [String, Array<string>],
       required: false,
-      default: undefined,
+      default: options?.cardinality === "many" ? [] : undefined,
     },
-    options: {
-      type: Array<SelectOption>,
-      required: true,
-    },
-    id: {
-      type: [String, Function],
+    provider: {
+      type: Object,
       required: false,
-      default: undefined,
+      default: useDataProvider<string>(["grey", "dark-grey", "light-grey"]),
     },
-    label: {
-      type: [String, Function],
-      required: false,
-      default: undefined,
-    }
   },
-  emits: ['update:modelValue', 'select'],
+  emits: ['update:modelValue', 'select', 'deselect'],
   setup(props, { emit }) {
     // @ts-expect-error - Ignore type error
-    return useInputSelect(props, emit, { cardinality: options?.cardinality, emptyValue: options?.emptyValue })
+    return useInputSelect<string>(props, emit, { cardinality: options?.cardinality })
   },
   template: `
-    <div v-for="[option, label] in provider.options.value" :key="option">
-      <input type="checkbox" :value="option" :data-test="option" @change="toggle(option)" />
-      <label>{{ label }}</label>
+    <div>
+      <div v-for="option in provider.data.value" :key="option">
+        <input type="checkbox" :value="option" :checked="isSelected(option)" :data-test="option" @change="toggle(option)" />
+        <label>{{ option }}</label>
+      </div>
     </div>
   `
 })
 
-describe("useInputSelect", () => {
-  const options: SelectOption[] = ["grey", ["dark-grey", "Dark grey"], { cid: "light-grey", uid: "rt56jk", name: "Light grey" }]
-  
-  test("Options", async () => {
-    const wrapper = mount(Select(), { props: { options }})
-
-    expect(wrapper.findAll('[type="checkbox"]').map(opt => (opt.element as HTMLInputElement).value)).toEqual([options[0], options[1][0], options[2]["cid"]])
-    expect(wrapper.findAll('label').map(opt => opt.text())).toEqual([options[0], options[1][1], options[2]["cid"]])
-
-    await wrapper.setProps({ id: "uid", label: "name" })
-    expect(wrapper.findAll('[type="checkbox"]').map(opt => (opt.element as HTMLInputElement).value)).toEqual([options[0], options[1][0], options[2]["uid"]])
-    expect(wrapper.findAll('label').map(opt => opt.text())).toEqual([options[0], options[1][1], options[2]["name"]])
-
-    await wrapper.setProps({ id: ({ uid }) => uid, label: ({ name }) => name })
-    expect(wrapper.findAll('[type="checkbox"]').map(opt => (opt.element as HTMLInputElement).value)).toEqual([options[0], options[1][0], options[2]["uid"]])
-    expect(wrapper.findAll('label').map(opt => opt.text())).toEqual([options[0], options[1][1], options[2]["name"]])
-  })
-
+describe("useSelection", () => {
   describe("Select", () => {
-    test("Single-value", async () => {
-      const wrapper = mount(Select(), { props: { options, "onUpdate:modelValue": (value) => wrapper.setProps({ modelValue: value }) }, attachTo: document.body })
+    test("Single-Value", async () => {
+      const wrapper = mount(Input(), { props: { "onUpdate:modelValue": value => wrapper.setProps({ modelValue: value }) }, attachTo: document.body })
       
-      await wrapper.get('[data-test="dark-grey"]').trigger("click")
+      await wrapper.get('[data-test="grey"]').trigger("change")
+      expect(wrapper.props("modelValue")).toEqual("grey")
+      await wrapper.get('[data-test="dark-grey"]').trigger("change")
       expect(wrapper.props("modelValue")).toEqual("dark-grey")
-      await wrapper.get('[data-test="dark-grey"]').trigger("click")
-      expect(wrapper.props("modelValue")).toBeUndefined()
-      
+      await wrapper.get('[data-test="dark-grey"]').trigger("change")
+      expect(wrapper.props("modelValue")).toEqual(undefined)
+
       expect(wrapper.emitted()).toHaveProperty("select")
-      console.log(wrapper.emitted("select"))
       expect(wrapper.emitted("select")).toEqual([
-        [["dark-grey", "Dark grey"], undefined],
-        [undefined, ["dark-grey", "Dark grey"]],
+        ["grey", "grey"],
+        ["dark-grey", "dark-grey"],
+      ])
+      
+      expect(wrapper.emitted()).toHaveProperty("deselect")
+      expect(wrapper.emitted("deselect")).toEqual([
+        ["dark-grey", undefined],
       ])
     })
 
-    test("Multi-value", async () => {
-      const wrapper = mount(Select({ cardinality: "many", emptyValue: [] }), { props: { options, "onUpdate:modelValue": (value) => wrapper.setProps({ modelValue: value }) }, attachTo: document.body })
+    test("Multi-Value", async () => {
+      const wrapper = mount(Input({ cardinality: "many" }), { props: { "onUpdate:modelValue": value => wrapper.setProps({ modelValue: value }) }, attachTo: document.body })
       
-      await wrapper.get('[data-test="grey"]').trigger("click")
+      await wrapper.get('[data-test="grey"]').trigger("change")
       expect(wrapper.props("modelValue")).toEqual(["grey"])
-      await wrapper.get('[data-test="dark-grey"]').trigger("click")
+      await wrapper.get('[data-test="dark-grey"]').trigger("change")
       expect(wrapper.props("modelValue")).toEqual(["grey", "dark-grey"])
-      await wrapper.get('[data-test="grey"]').trigger("click")
-      expect(wrapper.props("modelValue")).toEqual(["dark-grey"])
-      
+      await wrapper.get('[data-test="dark-grey"]').trigger("change")
+      expect(wrapper.props("modelValue")).toEqual(["grey"])
+
       expect(wrapper.emitted()).toHaveProperty("select")
       expect(wrapper.emitted("select")).toEqual([
-        [[["grey", "grey"]], [], [["grey", "grey"]]],
-        [[["dark-grey", "Dark grey"]], [], [["grey", "grey"], ["dark-grey", "Dark grey"]]],
-        [[], [["grey", "grey"]], [["dark-grey", "Dark grey"]]],
+        ["grey", ["grey"]],
+        ["dark-grey", ["grey", "dark-grey"]],
+      ])
+      
+      expect(wrapper.emitted()).toHaveProperty("deselect")
+      expect(wrapper.emitted("deselect")).toEqual([
+        ["dark-grey", ["grey"]],
       ])
     })
   })

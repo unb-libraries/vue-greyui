@@ -1,11 +1,10 @@
+export * from "./useDataProvider"
 export * from "./useInputAttrs"
 export * from "./useInputBoolean"
-export * from "./useInputText"
 export * from "./useInputNumber"
+export * from "./useInputSelect"
+export * from "./useInputText"
 export * from "./useInputValidation"
-export * from "./useDataProvider"
-export * from "./useInputTable"
-export * from "./useSelection"
 
 export type EventHandler = (event: Event) => void
 export type Cardinality = "single" | "many"

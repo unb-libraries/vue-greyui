@@ -1,116 +1,83 @@
-import { computed, watch } from "vue"
-import useInput from "./useInput"
-import { useInputOptionsProvider } from "./useInputOptionsProvider"
-import type { Cardinality } from "."
-import type { Emit, InputEmits, InputProps, Input, InputOptions } from "./useInput"
-import type { InputOptionsProvider, InputOptionsProviderOptions, Option, OptObject } from "./useInputOptionsProvider"
-
-type TData<C extends Cardinality = "single"> = C extends "single" ? string : string[]
-
-export interface InputSelectProps<O extends Option = Option, C extends Cardinality = "single", S = string> extends InputProps<TData<C>> {
-  options: O[]
-  id?: InputOptionsProviderOptions<O, S>["id"] | (O extends Option<infer T> ? keyof T : undefined)
-  label?: InputOptionsProviderOptions<O, S>["label"] | (O extends Option<infer T> ? keyof T : undefined)
-}
-export interface InputSelectEmits<S = string, C extends Cardinality = "single"> extends InputEmits<TData<C>> {
-  select: C extends "single" ? [current?: [string, S], previous?: [string, S]] : [selected: [string, S][], unselected: [string, S][], current: [string, S][]]
+import useInput from './useInput'
+import type { Cardinality, TCardinality } from "."
+import type { DataProvider } from "./useDataProvider"
+import type { Emit, Input, InputEmits, InputOptions, InputProps } from "./useInput"
+export interface SelectionProps<T = unknown, C extends Cardinality = "single"> extends InputProps<TCardinality<T, C>> {
+  provider: DataProvider<T>
 }
 
-export interface InputSelectOptions<C extends Cardinality = "single"> extends InputOptions<C extends "single" ? "" : []> {
+export interface SelectionEmits<T = unknown, C extends Cardinality = "single"> extends InputEmits<TCardinality<T, C>> {
+  select: [selected: TCardinality<T, C>, current: TCardinality<T, C>]
+  deselect: [unselected: TCardinality<T, C>, current: TCardinality<T, C>]
+}
+
+export interface SelectionOptions<T = unknown, C extends Cardinality = "single"> extends InputOptions<TCardinality<T, C>> {
   cardinality: C
-  conciseSelection: boolean
 }
 
-export type InputSelect<O extends Partial<InputSelectOptions<Cardinality>> = InputSelectOptions<"single">, S = string> = O extends Partial<InputSelectOptions<infer C>>
-  ? Input<O["conciseSelection"] extends true ? TData<C> : Record<string, boolean>> & {
-    isSelected: (option: string) => boolean
-    provider: InputOptionsProvider<S>
-    select: (option: string) => void
-    toggle: (option: string) => void
-    unselect: (option: string) => void
+export interface Selection<T = unknown, C extends Cardinality = "single"> extends Input<TCardinality<T, C>> {
+  select: (item: T) => void
+  toggle: (item: T) => void
+  deselect: C extends "many"
+    ? (item: number | ((item: T, index: number, arr: T[]) => boolean) | T) => void
+    : () => void
+  isSelected: (item: T) => boolean
+}
+
+export function useInputSelect<T = unknown, C extends Cardinality = "single">(props: SelectionProps<T, C>, emits: Emit<SelectionEmits<T, C>>, options?: Partial<SelectionOptions<T, C>>): Selection<T, C> {
+  const { cardinality, emptyValue } = { cardinality: options?.cardinality ?? "single", emptyValue: (options?.cardinality === "many" ? [] : options?.emptyValue) as TCardinality<T, C> }
+  const { value, ...input } = useInput<TCardinality<T, C>>(props, emits, { emptyValue })
+
+  function isSelected(item: T) {
+    return cardinality === "many"
+      ? ((value.value ?? []) as T[]).includes(item)
+      : value.value === item
   }
-  : InputSelect<InputSelectOptions<"single">, S>
 
-export function useInputSelect <O extends Option = Option<Record<string, string>>, C extends Cardinality = "single", I extends Partial<InputSelectOptions<C>> = InputSelectOptions<C>, S = string>(props: InputSelectProps<O, C, S>, emits: Emit<InputSelectEmits<S, C>>, options?: Partial<InputSelectOptions<C>>): InputSelect<I, S> {
-  const { cardinality, conciseSelection: selectedValuesOnly, emptyValue, ...config } = {
-    cardinality: Array.isArray(props.modelValue) || (Array.isArray(options?.emptyValue) && !options.emptyValue.length) ? "many" : "single",
-    conciseSelection: options.conciseSelection ?? true,
-    emptyValue: Array.isArray(props.modelValue) || options?.cardinality === "many" ? [] as string[] : "",
-    ...options ?? {}
-  } as InputSelectOptions<C>
+  function select(item: T) {
+    if (!isSelected(item) && props.provider.has(item)) {
+      const newValue = (cardinality === "single"
+        ? item as TCardinality<T, C>
+        : [...(value.value ?? []) as T[], item]) as TCardinality<T, C>
+      value.value = newValue
+      emits("select", item as TCardinality<T, C>, newValue)
+    }
+  }
 
-  const { value: selection, ...input } = useInput(props, emits, { emptyValue, ...config })
-  const provider = useInputOptionsProvider<S, O>(props.options, {
-    id: (item) => typeof props.id === "function"
-      ? props.id(item as OptObject<O>) : props.id && item[props.id]
-        ? `${item[props.id]}` : typeof item === "object"
-          ? `${item[Object.keys(item)[0]]}` : `${item}`,
-    label: (item) => {
-      if (typeof props.label === "function" && !["string", "array"].includes(typeof item)) {
-        return props.label(item)
-      } else if (props.label) {
-        return (typeof item === "string"
-          ? item : Array.isArray(item)
-            ? item[1] : props.label && `${item[props.label as keyof typeof item]}`) as S
+  function deselect(): void
+  function deselect(indexOrFilterOrItem: number | ((item: T, index: number, arr: T[]) => boolean) | T): void
+  function deselect(indexOrFilterOrItem?: number | ((item: T, index: number, arr: T[]) => boolean) | T): void {
+    const item = (typeof indexOrFilterOrItem === "number"
+      ? (value.value as T[])[indexOrFilterOrItem]
+      : typeof indexOrFilterOrItem === "function"
+        ? (value.value as T[]).find(indexOrFilterOrItem as (item: T, index: number, arr: T[]) => boolean)
+        : indexOrFilterOrItem
+          ? indexOrFilterOrItem
+          : value.value) as T
+    
+    if (item) {
+      const newValue = cardinality === "many"
+        ? (value.value as T[]).filter((selected) => selected !== item) as TCardinality<T, C>
+        : emptyValue as TCardinality<T, C>
+
+      if (isSelected(item)) {
+        value.value = newValue
       }
-    }
-  })
 
-  function isSelected(option: string) {
-    return cardinality === "many" && (selection.value ?? []).includes(option) || selection.value === option
-  }
-
-  function select(option: string) {
-    const [value] = provider.options.value.find(([id]) => id === option)
-    if (value && !isSelected(option)) {
-      selection.value = (cardinality === "many"
-        ? provider.options.value
-            .filter(([id]) => (selection.value as TData<"many">).includes(id) || value === id)
-            .map(([id]) => id)
-        : value
-      ) as TData<C>
+      emits("deselect", item as TCardinality<T, C>, newValue)
     }
   }
 
-  function unselect(option: string) {
-    if (Array.isArray(selection.value) && selection.value.includes(option)) {
-      selection.value = (selection.value ?? []).filter((value) => value !== option) as TData<C>
-    } else if (selection.value === option) {
-      input.clear()
-    }
+  function toggle(item: T) {
+    return isSelected(item) ? deselect(item) : select(item)
   }
-
-  function toOption(value: string): [string, S] {
-    return provider.options.value.find(([id]) => id === value)
-  }
-
-  type TArgs = C extends "single" ? [[string, S] | undefined, [string, S] | undefined] : [[string, S][], [string, S][], [string, S][]]
-  watch(selection, (newSelection, prevSelection) => {
-    if (Array.isArray(newSelection) && Array.isArray(prevSelection)) {
-      const added = newSelection.filter((value) => !prevSelection.includes(value))
-      const removed = prevSelection.filter((value) => !newSelection.includes(value))
-      emits("select", ...[added.map(toOption), removed.map(toOption), newSelection.map(toOption)] as TArgs)
-    } else if (!Array.isArray(newSelection) && !Array.isArray(prevSelection)) {
-      emits("select", ...[toOption(newSelection) ?? emptyValue, toOption(prevSelection) ?? emptyValue] as TArgs)
-    }
-  })
 
   return {
-    value: selectedValuesOnly
-      ? selection
-      : computed({
-        get: () => Object.fromEntries(provider.options.value.map(([id]) => [id, selection.value.includes(id)])),
-        set: (newValue: [string, boolean][]) => {
-          selection.value = cardinality === "single"
-            ? newValue.find(([, selected]) => selected)?.[0] as TData<C>
-            : newValue.filter(([, selected]) => selected).map(([id]) => id) as TData<C>
-        }
-      }),
-    provider,
-    isSelected,
+    value,
     select,
-    toggle: (option: string) => isSelected(option) ? unselect(option) : select(option),
-    unselect,
+    toggle,
+    deselect,
+    isSelected,
     ...input,
-  } as InputSelect<I, S>
+  }
 }
