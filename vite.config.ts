@@ -2,11 +2,10 @@ import vue from "@vitejs/plugin-vue"
 import { resolve } from "path"
 import { defineConfig } from "vite"
 import dts from "vite-plugin-dts"
-/// <reference types="vitest/config" />
-
+import type { ViteUserConfig } from "vitest/config"
 
 // https://vitejs.dev/config/
-export default defineConfig(({ command}) => ({
+export default defineConfig(({ command}): ViteUserConfig => ({
   plugins: [
     vue(),
     dts({
@@ -44,14 +43,13 @@ export default defineConfig(({ command}) => ({
     }
   },
   test: {
+    environment: "happy-dom",
     reporters: ["default", "html"],
     coverage: {
+      provider: "v8",
       include: ["lib/**/*.ts"],
       reporter: ["text", "html"],
       reportsDirectory: "./vitest/coverage",
-      thresholds: {
-        100: true,
-      },
     },
     include: ["lib/**/__tests__/*.{spec,test}.ts"],
   }

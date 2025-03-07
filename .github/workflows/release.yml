@@ -5,7 +5,7 @@ on:
   push:
     branches: ["dev"]
   pull_request:
-    branches: ["main"]
+    branches: ["main", "alpha"]
     types: [opened, closed]
     
 
@@ -24,7 +24,7 @@ jobs:
       run: npm run test:unit -- --coverage
     - name: Upload coverage report
       if: ${{ !cancelled() }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: vitest-report
         path: ./vitest
@@ -32,7 +32,8 @@ jobs:
   
   Release:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event.pull_request.merged == true
+    needs: test
+    if: contains(fromJson('["refs/heads/main", "refs/heads/alpha"]'), github.ref) && github.event.pull_request.merged == true
     steps:
     - uses: actions/checkout@v3
     - uses: actions/setup-node@v3
@@ -47,7 +48,8 @@ jobs:
       with:
         branches: |
           [
-            "main"
+            "main",
+            { "name": "alpha", "prerelease": true },
           ]
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
