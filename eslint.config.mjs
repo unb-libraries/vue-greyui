@@ -15,6 +15,7 @@ export default teslint.config(
   { 
     files: [
       `lib/**/*.ts`,
+      `lib/**/*.{ts,vue}`,
     ],
     languageOptions: {
       parserOptions: {
@@ -33,7 +34,10 @@ export default teslint.config(
     rules: {
       '@typescript-eslint/no-unused-vars': `warn`,
       "@typescript-eslint/consistent-type-imports": `warn`,
-    }
+      "@typescript-eslint/consistent-type-definitions": [`warn`, { type: `type` }],
+      "vue/multi-word-component-names": `off`,
+      "vue/require-explicit-emits": `off`,
+    },
   },
   {
     files: [

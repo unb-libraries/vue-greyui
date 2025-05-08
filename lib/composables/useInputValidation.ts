@@ -60,3 +60,34 @@ export function useInputValidation<T = unknown>(input: Input<T>, validators: Val
     error,
   }
 }
+
+export function useValidate<T>(value: Ref<T>, validators: Validator<T>[], options?: Partial<ValidateOptions>) {
+  const { autoValidate } = { autoValidate: true, ...options }
+  const valid = ref<boolean>()
+  const error = ref<string>()
+
+  function validate(value: T) {
+    let index = 0, res: true | string = true
+    while (index < validators.length && res === true) {
+      res = validators[index++](value)
+    }
+
+    valid.value = typeof res !== 'string'
+    error.value = typeof res === 'string'
+      ? res
+      : undefined
+
+    return res
+  }
+
+  if (autoValidate) {
+    watch(value, validate)
+  }
+
+  return {
+    validate,
+    valid,
+    error,
+  }
+
+}
