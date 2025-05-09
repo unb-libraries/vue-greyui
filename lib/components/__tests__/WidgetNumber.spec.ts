@@ -30,7 +30,7 @@ const Layout = defineComponent({
   `
 })
 
-describe('InputText', () => {
+describe('InputNumber', () => {
   describe('set value', async () => {
     test('within range', async () => {
       const input = mount(WidgetNumber, { props: { modelValue: 0, layout: markRaw(Layout), 'onUpdate:modelValue': value => input.setProps({ modelValue: value }) } })
