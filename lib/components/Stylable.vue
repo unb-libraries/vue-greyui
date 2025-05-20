@@ -4,7 +4,7 @@
 
 <script lang="ts" setup generic="P, E extends EmitsOptions | Record<string, any[]> = {}">
 import type { Component, ComputedOptions, MethodOptions, EmitsOptions } from "vue"
-import { computed, watch } from "vue"
+import { computed } from "vue"
 import { resolveLayout } from "~/utils"
 
 export type StylableProps<P, E extends EmitsOptions | Record<string, unknown[]> = undefined> = {

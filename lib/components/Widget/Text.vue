@@ -1,55 +1,36 @@
 <template>
-  <stylable-layout
-    :id="id"
+  <widget-base
+    ref="widget"
     :layout="layout"
-    :value="value"
-    :name="name"
-    :valid="valid"
-    :error="error"
-    v-bind="attrs"
-    @update="(newValue: string) => $emit('update:modelValue', newValue)"
-    @validate="onValidate"
-    @clear="$emit('update:modelValue', emptyValue)"
+    :model-value="value"
+    :empty-value="''"
+    :validators="validators"
+    :auto-validate="false"
+    @update:model-value="(newValue: string) => $emit('update:modelValue', newValue)"
   />
 </template>
 
 <script setup lang="ts">
-import { useInputAttrs, useValidate, type Validator } from "~/composables"
-import { Stylable as StylableLayout, type StylableProps } from "~/components"
-import { onMounted } from "vue"
+import { IWidget, type StylableProps, Widget as WidgetBase, WidgetEmits, WidgetLayoutEmits, WidgetLayoutProps } from "~/components"
+import { computed, ref } from "vue"
 
-export type WidgetTextLayoutProps = { value?: string }
-export type WidgetTextLayoutEmits = { update: [newValue: string], clear: [], validate: [] }
-
-defineOptions({ name: 'InputText', inheritAttrs: false })
-const { id, name, ...attrs } = useInputAttrs()
-
-const value = defineModel<string>({ required: false })
-const props = defineProps<StylableProps<WidgetTextLayoutProps, WidgetTextLayoutEmits> & {
+type WidgetTextProps = {
   required?: boolean
   pattern?: string
-  valid?: boolean
-  error?: string
-}>()
-const emits = defineEmits<{ validated: [valid: boolean, error?: string] }>()
+}
+export type WidgetTextLayoutProps = StylableProps<WidgetLayoutProps<string> & WidgetTextProps, WidgetLayoutEmits<string>>
 
-const { validate, valid, error } = useValidate(value, [
+const widget = ref<IWidget>()
+const value = defineModel<string>({ required: false })
+const props = defineProps<WidgetTextLayoutProps & WidgetTextProps>()
+defineEmits<WidgetEmits>()
+
+const validators = computed(() => [
   props.required && ((str: string) => Boolean(str) || 'This field is required.'),
   props.pattern && ((str: string) => new RegExp(props.pattern!).test(str) || `Must match the pattern ${props.pattern}.`),
-].filter(Boolean) as Validator[], { autoValidate: false })
-
-let emptyValue: string | undefined | null
-onMounted(() => {
-  emptyValue = !value.value ? '' : null
-})
-
-function onValidate() {
-  const valid = validate(value.value)
-  emits('validated', Boolean(valid), error?.value)
-}
+].filter(Boolean))
 
 defineExpose({
-  validate: onValidate,
-  error,
+  validate: widget.value?.validate,
 })
 </script>

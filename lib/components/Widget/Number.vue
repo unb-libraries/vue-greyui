@@ -1,6 +1,6 @@
 <template>
   <widget-base
-    :ef="widget"
+    ref="widget"
     :layout="layout"
     :model-value="value"
     :decimals="decimals"
@@ -14,7 +14,7 @@
 <script lang="ts" setup>
 import { type Validator } from "~/composables"
 import { computed, ref } from 'vue'
-import type { IWidget, WidgetLayoutProps, StylableProps, WidgetLayoutEmits } from '~/components'
+import type { IWidget, WidgetLayoutProps, StylableProps, WidgetLayoutEmits, WidgetEmits } from '~/components'
 import { Widget as WidgetBase } from '~/components'
 
 type WidgetNumberProps = {
@@ -28,7 +28,7 @@ export type WidgetNumberLayoutProps = StylableProps<WidgetLayoutProps<number> & 
 const widget = ref<IWidget>()
 const value = defineModel<number>()
 const props = defineProps<WidgetNumberLayoutProps & WidgetNumberProps>()
-defineEmits<{ validated: [valid: boolean, error?: string] }>()
+defineEmits<WidgetEmits>()
 
 const emptyValue = computed(() => Math.max(props.min ?? 0, 0))
 const validators = computed(() => [
