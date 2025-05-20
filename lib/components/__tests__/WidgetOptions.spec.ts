@@ -100,18 +100,18 @@ describe('WidgetSelect', async () => {
   }))
 
   function mountWidget(props?: Parameters<typeof mount>["1"]["props"]) {
-      const widget = mount(WidgetOptions, {
-        props: {
-          // @ts-ignore
-          layout: markRaw(Layout),
-          valid: undefined,
-          error: undefined,
-          'onUpdate:modelValue': (newValue: string) => widget.setProps({ modelValue: newValue }),
-          ...props ?? {},
-        }
-      })
-      return widget
-    }
+    const widget = mount(WidgetOptions, {
+      props: {
+        // @ts-ignore
+        layout: markRaw(Layout),
+        valid: undefined,
+        error: undefined,
+        'onUpdate:modelValue': (newValue: string) => widget.setProps({ modelValue: newValue }),
+        ...props ?? {},
+      }
+    })
+    return widget
+  }
 
   test('Props', async () => {
     const wrapper = mountWidget({ options: useDataProvider([]), min: 1, max: 3 })

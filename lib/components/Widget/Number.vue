@@ -35,8 +35,10 @@ const validators = computed(() => [
   props.required && ((value: number) => !isNaN(value) || 'Value is required.'),
 ].filter(Boolean) as Validator[])
 
-function onUpdate(newValue: number) {
-  value.value = Math.min(Math.max(newValue, (props.min ?? -Infinity), props.max ?? Infinity))
+function onUpdate(newValue?: number) {
+  value.value = !newValue
+    ? newValue
+    : Math.min(Math.max(newValue, props.min ?? -Infinity), props.max ?? Infinity)
 }
 
 defineExpose({
