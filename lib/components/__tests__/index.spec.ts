@@ -5,6 +5,7 @@ test('export all components', async () => {
   expect(index).toHaveProperty('Stylable')
   // expect(index).toHaveProperty('Widget')
   expect(index).toHaveProperty('WidgetNumber')
-  expect(index).toHaveProperty('WidgetText')
   expect(index).toHaveProperty('WidgetOptions')
+  expect(index).toHaveProperty('WidgetText')
+  expect(index).toHaveProperty('WidgetToggle')
 })
