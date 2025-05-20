@@ -9,11 +9,11 @@ export type { WidgetTextLayoutProps, WidgetTextLayoutEmits } from './Widget/Text
 export { default as WidgetText } from './Widget/Text.vue'
 
 // Widget Checkbox
-export type { WidgetCheckboxLayoutProps, WidgetCheckboxLayoutEmits } from './Widget/Checkbox.vue'
-export { default as WidgetCheckbox } from './Widget/Checkbox.vue'
+export type { WidgetToggleLayoutProps } from './Widget/Toggle.vue'
+export { default as WidgetToggle } from './Widget/Toggle.vue'
 
 // Widget Number
-export type { WidgetNumberLayoutProps, WidgetNumberLayoutEmits } from './Widget/Number.vue'
+export type { WidgetNumberLayoutProps } from './Widget/Number.vue'
 export { default as WidgetNumber } from './Widget/Number.vue'
 
 // Widget Select
