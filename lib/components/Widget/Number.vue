@@ -1,58 +1,45 @@
 <template>
-  <stylable-layout
-    :id="id"
+  <widget-base
+    :ef="widget"
     :layout="layout"
-    :value="value"
-    :name="name"
+    :model-value="value"
     :decimals="decimals"
-    :valid="valid"
-    :error="error"
-    v-bind="attrs"
-    @update="(newValue: number) => onUpdate(newValue)"
-    @validate="onValidate"
-    @clear="$emit('update:modelValue', emptyValue)"
+    :empty-value="emptyValue"
+    :validators="validators"
+    :auto-validate="false"
+    @update:model-value="onUpdate"
   />
 </template>
 
 <script lang="ts" setup>
-import { useInputAttrs, useValidate, type Validator } from "~/composables"
-import { onMounted } from 'vue'
-import { type StylableProps, Stylable as StylableLayout } from '~/components'
+import { type Validator } from "~/composables"
+import { computed, ref } from 'vue'
+import type { IWidget, WidgetLayoutProps, StylableProps, WidgetLayoutEmits } from '~/components'
+import { Widget as WidgetBase } from '~/components'
 
-type WidgetNumberProps = { decimals?: number, required?: boolean, min?: number, max?: number }
-export type WidgetNumberLayoutProps = { value?: number } & WidgetNumberProps
-export type WidgetNumberLayoutEmits = { update: [newValue: number], clear: [], validate: [] }
+type WidgetNumberProps = {
+  decimals?: number
+  required?: boolean
+  min?: number
+  max?: number
+}
+export type WidgetNumberLayoutProps = StylableProps<WidgetLayoutProps<number> & WidgetNumberProps, WidgetLayoutEmits<number>>
 
-defineOptions({ name: 'WidgetNumber', inheritAttrs: false })
-const { id, name, ...attrs } = useInputAttrs()
+const widget = ref<IWidget>()
 const value = defineModel<number>()
-const props = defineProps<StylableProps<WidgetNumberLayoutProps, WidgetNumberLayoutEmits> & WidgetNumberProps>()
-const emits = defineEmits<{ validated: [valid: boolean, error?: string] }>()
+const props = defineProps<WidgetNumberLayoutProps & WidgetNumberProps>()
+defineEmits<{ validated: [valid: boolean, error?: string] }>()
 
-let emptyValue: number
-onMounted(() => {
-  emptyValue = !value.value ? 0 : null
-})
-
-const { validate, valid, error } = useValidate(value, [
-  props.required && ((value: number) => Boolean(value) || 'This field is required.'),
-  props.min !== undefined && ((value: number) => value >= props.min || `Must be greater than or equal to ${props.min}.`),
-  props.max !== undefined && ((value: number) => value <= props.max || `Must be less than or equal to ${props.max}.`),
-].filter(Boolean) as Validator[], { autoValidate: false })
+const emptyValue = computed(() => Math.max(props.min ?? 0, 0))
+const validators = computed(() => [
+  props.required && ((value: number) => !isNaN(value) || 'Value is required.'),
+].filter(Boolean) as Validator[])
 
 function onUpdate(newValue: number) {
-  if (validate(newValue) === true) {
-    value.value = newValue
-  }
-}
-
-function onValidate() {
-  const valid = validate(value.value)
-  emits('validated', Boolean(valid), error?.value)
+  value.value = Math.min(Math.max(newValue, (props.min ?? -Infinity), props.max ?? Infinity))
 }
 
 defineExpose({
-  validate: onValidate,
-  get error() { return error?.value },
+  validate: widget.value?.validate,
 })
 </script>
