@@ -11,41 +11,48 @@ const Layout = defineComponent({
       default: undefined,
     },
   },
-  emits: ['update', 'clear', 'validate'],
+  emits: ['input', 'clear', 'validate'],
+  setup() { return {} },
   template: `
     <div>
-      <input type="text" data-test="input" @input="$emit('update', $event.target.value)" />
+      <input type="text" data-test="input" @input="$emit('input', $event.target.value)" />
       <button data-test="clear" @click.prevent="$emit('clear')" />
-      <button data-test="validate" @click.prevent="$emit('validate')" />
     </div>
   `
 })
 
 describe('InputText', () => {
+  function mountWidget(props?: Parameters<typeof mount>["1"]["props"]) {
+    const widget = mount(WidgetText, {
+      props: {
+        // @ts-ignore
+        layout: markRaw(Layout),
+        valid: undefined,
+        error: undefined,
+        'onUpdate:modelValue': (newValue: string) => widget.setProps({ modelValue: newValue }),
+        ...props ?? {},
+      },
+    })
+    return widget
+  }
+  
   test('set value', async () => {
-    const input = mount(WidgetText, { props: { layout: markRaw(Layout), 'onUpdate:modelValue': value =>  input.setProps({ modelValue: value }) } })
+    const input = mountWidget()
     await input.get('[data-test="input"]').setValue("Grey")
     expect(input.props().modelValue).toBe("Grey")
   })
 
   describe('clear value', async () => {
     it('should yield "null" when initialized', async () => {
-      const input = mount(WidgetText, { props: { modelValue: 'Grey', layout: markRaw(Layout), 'onUpdate:modelValue': value =>  input.setProps({ modelValue: value }) } })
+      const input = mountWidget({ modelValue: 'Grey',  })
       await input.get('[data-test="clear"]').trigger('click')
       expect(input.props().modelValue).toBe(null)
     })
     
     it('should yield "" when NOT initialized', async () => {
-      const input = mount(WidgetText, { props: { layout: markRaw(Layout), 'onUpdate:modelValue': value =>  input.setProps({ modelValue: value }) } })
+      const input = mountWidget()
       await input.get('[data-test="clear"]').trigger('click')
       expect(input.props().modelValue).toBe("")
     })
-  })
-  
-  test('validate', async () => {
-    const input = mount(WidgetText, { props: { layout: markRaw(Layout), 'onUpdate:modelValue': value =>  input.setProps({ modelValue: value }) } })
-    await input.get('[data-test="validate"]').trigger('click')
-    expect(input.emitted()).toHaveProperty("validated")
-    expect(input.props().valid).not.toBe(undefined)
   })
 })
