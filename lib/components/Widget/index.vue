@@ -20,9 +20,13 @@ export type WidgetProps<T> = {
   autoValidate?: boolean
 }
 
-export type WidgetLayoutEmits<T> = {
-  input: [newValue: T]
+export type WidgetEmits = {
   clear: []
+  validated: [valid: boolean, error?: string]
+}
+
+export type WidgetLayoutEmits<T> = Pick<WidgetEmits, 'clear'> & {
+  input: [newValue: T]
   validate: []
 }
 
@@ -31,22 +35,21 @@ export type WidgetLayoutProps<T> = StylableProps<{
   valid?: boolean
   error?: string
 }, WidgetLayoutEmits<T>>
+
+export type IWidget = {
+  validate: () => void
+}
 </script>
 
-<script lang="ts" setup generic="T">
+<script lang="ts" setup generic="T, P extends WidgetLayoutProps<T>, E extends WidgetLayoutEmits<T>">
 import { onMounted, ref, watch } from 'vue'
 import { type StylableProps, Stylable as StylableLayout } from '~/components'
 import { useInputAttrs, type Validator } from '~/composables'
 
-defineOptions({ name: 'WidgetSelect', inheritAttrs: false })
 const { id, name, ...attrs } = useInputAttrs()
-
 const modelValue = defineModel<T>()
-const props = defineProps<StylableProps<WidgetLayoutProps<T>, WidgetLayoutEmits<T>> & WidgetProps<T>>()
-const emits = defineEmits<{
-  clear: []
-  validated: [valid: boolean, error?: string]
-}>()
+const props = defineProps<StylableProps<P, E> & WidgetProps<T>>()
+const emits = defineEmits<WidgetEmits>()
 
 let emptyValue: T | null
 onMounted(() => {

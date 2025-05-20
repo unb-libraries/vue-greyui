@@ -36,36 +36,37 @@ const Layout = defineComponent({
 })
 
 describe('Widget', () => {
-  function mountWidget(props: Parameters<typeof mount>["1"]["props"]) {
+  function mountWidget(props?: Parameters<typeof mount>["1"]["props"]) {
     const widget = mount(Widget, {
       props: {
         // @ts-ignore
         layout: markRaw(Layout),
         valid: undefined,
         error: undefined,
+        emptyValue: '',
         'onUpdate:modelValue': (newValue: string) => widget.setProps({ modelValue: newValue }),
-        ...props
+        ...props ?? {},
       }
     })
     return widget
   }
   
   test('value', async () => {
-    const widget = mountWidget({ emptyValue: '' })
+    const widget = mountWidget()
     await widget.get('[data-test="input"]').setValue('Grey')
     expect(widget.get('[data-test="value"]').text()).toBe('Grey')
   })
 
   describe('clear', () => {
     it('should reset to "" if not initialized', async () => {
-      const widget = mountWidget({ emptyValue: '' })
+      const widget = mountWidget()
       await widget.get('[data-test="clear"]').trigger('click')
       expect(widget.props().modelValue).toBe('')
       expect(widget.get('[data-test="value"]').text()).toBe('')
     })
     
     it('should reset to "null" if initialized', async () => {
-      const widget = mountWidget({ modelValue:'Grey', emptyValue: '' })
+      const widget = mountWidget({ modelValue:'Grey' })
       await widget.get('[data-test="clear"]').trigger('click')
       expect(widget.props().modelValue).toBe(null)
       expect(widget.get('[data-test="value"]').text()).toBe('')
@@ -74,7 +75,7 @@ describe('Widget', () => {
 
   describe('validation', async () => {
     it('should validate automatically', async () => {
-      const widget = mountWidget({ emptyValue: '', autoValidate: true, validators: [(value: string) => value === 'Grey' || "Must be 'Grey'"] })
+      const widget = mountWidget({ autoValidate: true, validators: [(value: string) => value === 'Grey' || "Must be 'Grey'"] })
       
       await widget.get('[data-test="input"]').setValue('Grey')
       await widget.get('[data-test="input"]').setValue('White')
@@ -86,7 +87,7 @@ describe('Widget', () => {
     })
     
     it('should validate on demand', async () => {
-      const widget = mountWidget({ emptyValue: '', validators: [() => true] })
+      const widget = mountWidget({ validators: [() => true] })
       
       await widget.get('[data-test="input"]').setValue('Grey')
       expect(widget.emitted()).not.toHaveProperty('validated')
