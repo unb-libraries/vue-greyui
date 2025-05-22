@@ -1,21 +1,32 @@
 import { WidgetText } from '..'
 import { mount } from '@vue/test-utils'
-import { describe, expect, it, test } from 'vitest'
+import { describe, expect, test } from 'vitest'
 import { defineComponent, markRaw } from 'vue'
 
 const Layout = defineComponent({
   props: {
     value: {
-      type: String,
+      type: Array<String>,
       required: false,
       default: undefined,
     },
+    cardinality: {
+      type: String,
+      required: false,
+      default: 'one',
+    },
   },
   emits: ['input', 'clear', 'validate'],
-  setup() { return {} },
+  setup(props, { emit }) {
+    return {
+      onInput(value: string) {
+        emit('input', props.cardinality === 'many' ? [...props.value ?? [], value] : [value])
+      }
+    }
+  },
   template: `
     <div>
-      <input type="text" data-test="input" @input="$emit('input', $event.target.value)" />
+      <input type="text" data-test="input" @input="onInput($event.target.value)" />
       <button data-test="clear" @click.prevent="$emit('clear')" />
     </div>
   `
@@ -35,24 +46,52 @@ describe('InputText', () => {
     })
     return widget
   }
-  
-  test('set value', async () => {
-    const input = mountWidget()
-    await input.get('[data-test="input"]').setValue("Grey")
-    expect(input.props().modelValue).toBe("Grey")
-  })
 
-  describe('clear value', async () => {
-    it('should yield "null" when initialized', async () => {
+  describe('Single-value', () => {
+    test('new value should replace the current one', async () => {
+      const input = mountWidget()
+      
+      await input.get('[data-test="input"]').setValue("Grey")
+      expect(input.props().modelValue).toEqual("Grey")
+      
+      await input.get('[data-test="input"]').setValue("Grey")
+      expect(input.props().modelValue).toEqual("Grey")
+    })
+
+    test('clearing should yield "null" if previously initialized', async () => {
       const input = mountWidget({ modelValue: 'Grey',  })
       await input.get('[data-test="clear"]').trigger('click')
       expect(input.props().modelValue).toBe(null)
     })
     
-    it('should yield "" when NOT initialized', async () => {
+    test('clearing should yield "" if previously NOT initialized', async () => {
       const input = mountWidget()
       await input.get('[data-test="clear"]').trigger('click')
       expect(input.props().modelValue).toBe("")
+    })
+
+
+  })
+  
+  describe('Multi-value', async () => {
+    test('new values should be appended', async () => {
+      const input = mountWidget({ cardinality: 'many' })
+      await input.get('[data-test="input"]').setValue("Grey")
+      await input.get('[data-test="input"]').setValue("Light grey")
+      expect(input.props().modelValue).toEqual(["Grey", "Light grey"])
+    })
+    
+    test('clearing should yield "null" if previously initialized', async () => {
+      const input = mountWidget({ modelValue: ['Grey', 'Light grey'], cardinality: 'many' })
+      await input.get('[data-test="clear"]').trigger('click')
+      expect(input.props().modelValue).toBe(null)
+    })
+    
+    test('clearing should yield [] if previously NOT initialized', async () => {
+      const input = mountWidget({ cardinality: 'many' })
+      await input.get('[data-test="input"]').setValue("Grey")
+      await input.get('[data-test="clear"]').trigger('click')
+      expect(input.props().modelValue).toEqual([])
     })
   })
 })
