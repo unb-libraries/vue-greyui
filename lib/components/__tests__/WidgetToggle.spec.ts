@@ -1,6 +1,6 @@
 import { WidgetToggle } from '..'
 import { mount } from '@vue/test-utils'
-import { describe, expect, test } from 'vitest'
+import { describe, expect, it, test } from 'vitest'
 import { defineComponent, markRaw } from 'vue'
 
 const Layout = defineComponent({
@@ -15,9 +15,25 @@ const Layout = defineComponent({
       required: false,
       default: undefined,
     },
+    required: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    error: {
+      type: String,
+      required: false,
+      default: undefined,
+    },
   },
   emits: ['input', 'validate'],
-  template: `<input type="checkbox" data-test="input" @change="$emit('input', !value)" />`
+  template: `
+    <div>
+      <input type="checkbox" data-test="input" @change="$emit('input', !value)" />
+      <button data-test="validate" @click.prevent="$emit('validate')" />
+      <div data-test="error">{{ error }}</div>
+    </div>
+  `
 })
 
 describe('InputCheckbox', () => {
@@ -28,8 +44,7 @@ describe('InputCheckbox', () => {
           layout: markRaw(Layout),
           modelValue: false,
           label: 'Check me',
-          valid: undefined,
-          error: undefined,
+          required: false,
           'onUpdate:modelValue': (newValue: boolean) => widget.setProps({ modelValue: newValue }),
           ...props ?? {},
         }
@@ -45,5 +60,14 @@ describe('InputCheckbox', () => {
     
     await input.get('[data-test="input"]').trigger('change')
     expect(input.props().modelValue).toBe(false)
+  })
+
+  describe('Validation', () => {
+    it('should fail if unchecked by required', async () => {
+      const input = mountWidget({ modelValue: true, required: true })
+      
+      await input.get('[data-test="input"]').trigger('change')
+      expect(input.get('[data-test="error"]').text()).not.toBe('')
+    })
   })
 })
