@@ -74,11 +74,12 @@ const Layout = defineComponent({
         <div v-if="Array.isArray(value)"><span v-for="(v, i) in value" :key="v" :data-test="key + '.' + i">{{ v }}</span></div>
         <template v-else>{{ value }}</template>
       </div>
-      <button data-test="toggle" @click="onToggle">Toggle</button>
+      <button data-test="toggle" @click="onToggle" />
       <input data-test="other" @input="onAdd($event.target.value)" />
       <input data-test="filter" @input="onFilter($event.target.value)" />
-      <button data-test="clear" @click="onClear">Clear</button>
-      <button data-test="validate" @click="onClear">Validate</button>
+      <button data-test="clear" @click="onClear" />
+      <button data-test="validate" @click="onValidate" />
+      <div data-test="error">{{ error }}</div>
     </div>
   `
 })
@@ -104,8 +105,6 @@ describe('WidgetSelect', async () => {
       props: {
         // @ts-ignore
         layout: markRaw(Layout),
-        valid: undefined,
-        error: undefined,
         'onUpdate:modelValue': (newValue: string) => widget.setProps({ modelValue: newValue }),
         ...props ?? {},
       }
@@ -142,6 +141,13 @@ describe('WidgetSelect', async () => {
       expect(wrapper.props().modelValue).toBe(null)
       expect(wrapper.get('[data-test="value"]').text()).toBe('')
     })
+
+    test('validate', async () => {
+      const wrapper = mountWidget({ options: useDataProvider(['Grey', 'Light grey']), min: 1, max: 1 })
+
+      await wrapper.get('[data-test="validate"]').trigger('click')
+      expect(wrapper.get('[data-test="error"]').text()).not.toBe('')
+    })
   })
   
   describe('Multi select', () => {
@@ -171,6 +177,13 @@ describe('WidgetSelect', async () => {
       await wrapper.get('[data-test="clear"]').trigger('click')
       expect(wrapper.props().modelValue).toBe(null)
       expect(wrapper.get('[data-test="value"]').text()).toBe('')
+    })
+
+    test('validate', async () => {
+      const wrapper = mountWidget({ cardinality: 'many', options: useDataProvider(['Grey', 'Light grey']), min: 1, max: 1 })
+
+      await wrapper.get('[data-test="validate"]').trigger('click')
+      expect(wrapper.get('[data-test="error"]').text()).not.toBe('')
     })
   })
 

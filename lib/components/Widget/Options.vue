@@ -90,6 +90,6 @@ function onFilter(filter: (item: T) => boolean) {
 }
 
 defineExpose({
-  validate: () => widget.value?.validate(),
+  validate: widget.value?.validate,
 })
 </script>
