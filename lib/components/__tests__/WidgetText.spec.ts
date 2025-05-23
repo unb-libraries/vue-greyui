@@ -21,17 +21,12 @@ const Layout = defineComponent({
       default: undefined,
     },
   },
-  emits: ['input', 'clear', 'validate'],
-  setup(props, { emit }) {
-    return {
-      onInput(value: string) {
-        emit('input', props.cardinality === 'many' ? [...props.value ?? [], value] : [value])
-      }
-    }
-  },
+  emits: ['input', 'add', 'remove', 'clear', 'validate'],
   template: `
     <div>
-      <input type="text" data-test="input" @input="onInput($event.target.value)" />
+      <input v-if="cardinality !== 'many'" type="text" data-test="input" @input="$emit('input', [$event.target.value])" />
+      <input v-if="cardinality === 'many'" type="text" data-test="add" @input="$emit('add', $event.target.value)" />
+      <input v-if="cardinality === 'many'" type="text" data-test="remove" @input="$emit('remove', $event.target.value)" />
       <button data-test="clear" @click.prevent="$emit('clear')" />
       <button data-test="validate" @click.prevent="$emit('validate')" />
       <div data-test="error">{{ error }}</div>
@@ -91,11 +86,25 @@ describe('InputText', () => {
   })
   
   describe('Multi-value', async () => {
-    test('new values should be appended', async () => {
-      const input = mountWidget({ cardinality: 'many' })
-      await input.get('[data-test="input"]').setValue("Grey")
-      await input.get('[data-test="input"]').setValue("Light grey")
-      expect(input.props().modelValue).toEqual(["Grey", "Light grey"])
+    describe('add', () => {
+      it('should append if valid', async () => {
+        const input = mountWidget({ modelValue: ['Grey'], cardinality: 'many', pattern: 'grey' })
+        await input.get('[data-test="add"]').setValue("Light grey")
+        expect(input.props().modelValue).toEqual(['Grey', 'Light grey'])
+      })
+      
+      it('should reject if invalid', async () => {
+        const input = mountWidget({ modelValue: ['Grey'], cardinality: 'many', pattern: 'grey' })
+        await input.get('[data-test="add"]').setValue("White")
+        expect(input.props().modelValue).toEqual(['Grey'])
+        expect(input.get('[data-test="error"]').text()).not.toBe("")
+      })
+    })
+
+    test('remove', async () => {
+      const input = mountWidget({ modelValue: ['Grey'], cardinality: 'many', pattern: 'grey' })
+      await input.get('[data-test="remove"]').setValue("Grey")
+      expect(input.props().modelValue).toEqual([])
     })
     
     test('clearing should yield "null" if previously initialized', async () => {
@@ -106,25 +115,19 @@ describe('InputText', () => {
     
     test('clearing should yield [] if previously NOT initialized', async () => {
       const input = mountWidget({ cardinality: 'many' })
-      await input.get('[data-test="input"]').setValue("Grey")
+      await input.setProps({ modelValue: ['Grey'] })
       await input.get('[data-test="clear"]').trigger('click')
       expect(input.props().modelValue).toEqual([])
     })
 
-    describe('Validation', () => {
-      it('should accept "Light grey"', async () => {
-        const input = mountWidget({ modelValue: ['Grey'], cardinality: 'many', pattern: 'grey' })
-        await input.get('[data-test="input"]').setValue("Light grey")
-        expect(input.get('[data-test="error"]').text()).toBe("")
-        expect(input.props().modelValue).toEqual(['Grey', 'Light grey'])
-      })
-      
-      it('should reject "White"', async () => {
-        const input = mountWidget({ modelValue: ['Grey'], cardinality: 'many', pattern: 'grey' })
-        await input.get('[data-test="input"]').setValue("White")
-        expect(input.get('[data-test="error"]').text()).not.toBe("")
-        expect(input.props().modelValue).toEqual(['Grey'])
-      })
+    test('Validation', async () => {
+      const input = mountWidget({ cardinality: 'many', min: 1 })
+      await input.get('[data-test="validate"]').trigger("click")
+      expect(input.get('[data-test="error"]').text()).not.toBe("")
+
+      input.setProps({ modelValue: ['Grey'] })
+      await input.get('[data-test="validate"]').trigger("click")
+      expect(input.get('[data-test="error"]').text()).toBe("")
     })
   })
 })

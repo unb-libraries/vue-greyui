@@ -8,6 +8,8 @@
     :validators="validators"
     :auto-validate="autoValidate"
     @update:model-value="onUpdate"
+    @add="onAdd"
+    @remove="onRemove"
   />
 </template>
 
@@ -22,7 +24,12 @@ type WidgetTextProps = {
   max?: number
   unique?: boolean
 }
-export type WidgetTextLayoutProps = StylableProps<WidgetLayoutProps<string[]> & WidgetTextProps, WidgetLayoutEmits<string[]>>
+
+type WidgetTextLayoutEmits<T> = WidgetLayoutEmits<T> & {
+  add: [newValue: string]
+  remove: [indexOrValue: number | string]
+}
+export type WidgetTextLayoutProps = StylableProps<WidgetLayoutProps<string[]> & WidgetTextProps, WidgetTextLayoutEmits<string[]>>
 </script>
 
 <script setup lang="ts" generic="C extends Cardinality = 'one'">
@@ -37,19 +44,35 @@ const props = defineProps<WidgetTextLayoutProps & WidgetTextProps>()
 defineEmits<WidgetEmits>()
 const emptyValue = computed(() => props.cardinality === 'many' ? [] : '')
 const validators = computed(() => [
-  props.cardinality === 'many' && props.min && ((arr: string[]) => arr.length >= props.min || `Must have at least ${props.min} items.`),
-  props.cardinality === 'many' && props.max && ((arr: string[]) => arr.length <= props.max || `Must have at most ${props.max} items.`),
-  props.pattern && ((arr: string[]) => arr.every(str => new RegExp(props.pattern, 'i').test(str)) || `Must match the pattern ${props.pattern}.`),
-  props.cardinality === 'many' && props.unique && ((arr: string[]) => arr.length === new Set(arr).size || 'Items must be unique.'),
-  props.cardinality === 'one' && props.required && ((arr: string[]) => arr.length > 0 || 'This field is required.'),
+  props.cardinality === 'many' && props.min && ((arr: string[]) => (arr ?? []).length >= props.min || `Must have at least ${props.min} items.`),
+  props.cardinality === 'many' && props.max && ((arr: string[]) => (arr ?? []).length <= props.max || `Must have at most ${props.max} items.`),
+  props.pattern && ((arr: string[]) => (arr ?? []).every(str => new RegExp(props.pattern, 'i').test(str)) || `Must match the pattern ${props.pattern}.`),
+  props.cardinality === 'many' && props.unique && ((arr: string[]) => (arr ?? []).length === new Set(arr).size || 'Items must be unique.'),
+  props.cardinality !== 'many' && props.required && ((arr: string[]) => (arr ?? []).length > 0 || 'This field is required.'),
 ].filter(Boolean) as Validator<string[]>[])
 const autoValidate = computed(() => props.cardinality === 'many')
 
 function onUpdate(newValue?: string[]) {
-  if (!newValue || (props.cardinality === 'many' && widget.value?.validate(newValue) === true)) {
-    value.value = newValue as TData<C>
-  } else if (props.cardinality !== 'many') {
-    value.value = (newValue[0] ?? emptyValue.value) as TData<C>
+  value.value = ((!newValue || props.cardinality === 'many')
+    ? newValue
+    : newValue[0] ?? emptyValue.value) as TData<C>
+}
+
+function onAdd(newValue: string) {
+  const newModelValue = [...inputValue.value ?? [], newValue]
+  if (props.cardinality === 'many' && widget.value?.validate(newModelValue) === true) {
+    onUpdate(newModelValue)
+  }
+}
+
+function onRemove(indexOrValue: number | string) {
+  if (props.cardinality === 'many') {
+    const index = typeof indexOrValue === 'string'
+      ? inputValue.value.indexOf(indexOrValue as string)
+      : indexOrValue
+    if (index > -1) {
+      onUpdate(inputValue.value.filter((_, i) => i !== index))
+    }
   }
 }
 
