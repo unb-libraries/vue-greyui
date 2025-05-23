@@ -27,7 +27,7 @@ export type WidgetEmits = {
 
 export type WidgetLayoutEmits<T> = Pick<WidgetEmits, 'clear'> & {
   input: [newValue: T]
-  validate: []
+  validate: [value?: T]
 }
 
 export type WidgetLayoutProps<T> = StylableProps<{
@@ -37,12 +37,12 @@ export type WidgetLayoutProps<T> = StylableProps<{
 }, WidgetLayoutEmits<T>>
 
 export type IWidget = {
-  validate: () => void
+  validate: <T>(value: T) => true | string
 }
 </script>
 
 <script lang="ts" setup generic="T, P extends WidgetLayoutProps<T>, E extends WidgetLayoutEmits<T>">
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, onUpdated, ref, watch } from 'vue'
 import { type StylableProps, Stylable as StylableLayout } from '~/components'
 import { useInputAttrs, type Validator } from '~/composables'
 
@@ -73,9 +73,10 @@ function validate(value: T) {
   return res
 }
 
-function onValidate() {
-  const res = validate(modelValue.value)
+function onValidate(value?: T) {
+  const res = validate(value ?? modelValue.value)
   emits('validated', res === true, typeof res === 'string' ? res : undefined)
+  return res
 }
 
 if (props.autoValidate) {

@@ -6,7 +6,7 @@
     :model-value="inputValue"
     :empty-value="emptyValue"
     :validators="validators"
-    :auto-validate="false"
+    :auto-validate="autoValidate"
     @update:model-value="onUpdate"
   />
 </template>
@@ -39,15 +39,18 @@ const emptyValue = computed(() => props.cardinality === 'many' ? [] : '')
 const validators = computed(() => [
   props.cardinality === 'many' && props.min && ((arr: string[]) => arr.length >= props.min || `Must have at least ${props.min} items.`),
   props.cardinality === 'many' && props.max && ((arr: string[]) => arr.length <= props.max || `Must have at most ${props.max} items.`),
-  props.cardinality === 'many' && props.pattern && ((arr: string[]) => arr.every(new RegExp(props.pattern!).test) || `Must match the pattern ${props.pattern}.`),
-  props.cardinality === 'many' && props.required && ((arr: string[]) => arr.length > 0 || 'This field is required.'),
+  props.pattern && ((arr: string[]) => arr.every(str => new RegExp(props.pattern, 'i').test(str)) || `Must match the pattern ${props.pattern}.`),
   props.cardinality === 'many' && props.unique && ((arr: string[]) => arr.length === new Set(arr).size || 'Items must be unique.'),
+  props.cardinality === 'one' && props.required && ((arr: string[]) => arr.length > 0 || 'This field is required.'),
 ].filter(Boolean) as Validator<string[]>[])
+const autoValidate = computed(() => props.cardinality === 'many')
 
 function onUpdate(newValue?: string[]) {
-  value.value = (!newValue || props.cardinality === 'many'
-    ? newValue
-    : (newValue[0] ?? emptyValue.value)) as TData<C>
+  if (!newValue || (props.cardinality === 'many' && widget.value?.validate(newValue) === true)) {
+    value.value = newValue as TData<C>
+  } else if (props.cardinality !== 'many') {
+    value.value = (newValue[0] ?? emptyValue.value) as TData<C>
+  }
 }
 
 defineExpose({

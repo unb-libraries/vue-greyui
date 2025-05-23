@@ -1,6 +1,6 @@
 import { WidgetText } from '..'
 import { mount } from '@vue/test-utils'
-import { describe, expect, test } from 'vitest'
+import { describe, expect, it, test } from 'vitest'
 import { defineComponent, markRaw } from 'vue'
 
 const Layout = defineComponent({
@@ -15,6 +15,11 @@ const Layout = defineComponent({
       required: false,
       default: 'one',
     },
+    error: {
+      type: String,
+      required: false,
+      default: undefined,
+    },
   },
   emits: ['input', 'clear', 'validate'],
   setup(props, { emit }) {
@@ -28,6 +33,8 @@ const Layout = defineComponent({
     <div>
       <input type="text" data-test="input" @input="onInput($event.target.value)" />
       <button data-test="clear" @click.prevent="$emit('clear')" />
+      <button data-test="validate" @click.prevent="$emit('validate')" />
+      <div data-test="error">{{ error }}</div>
     </div>
   `
 })
@@ -38,8 +45,6 @@ describe('InputText', () => {
       props: {
         // @ts-ignore
         layout: markRaw(Layout),
-        valid: undefined,
-        error: undefined,
         'onUpdate:modelValue': (newValue: string) => widget.setProps({ modelValue: newValue }),
         ...props ?? {},
       },
@@ -70,7 +75,19 @@ describe('InputText', () => {
       expect(input.props().modelValue).toBe("")
     })
 
-
+    describe('Validation', () => {
+      it('should accept "Light grey"', async () => {
+        const input = mountWidget({ modelValue: 'Light grey', pattern: 'grey' })
+        await input.get('[data-test="validate"]').trigger("click")
+        expect(input.get('[data-test="error"]').text()).toBe("")
+      })
+      
+      it('should reject "White"', async () => {
+        const input = mountWidget({ modelValue: 'White', pattern: 'grey' })
+        await input.get('[data-test="validate"]').trigger("click")
+        expect(input.get('[data-test="error"]').text()).not.toBe("")
+      })
+    })
   })
   
   describe('Multi-value', async () => {
@@ -92,6 +109,22 @@ describe('InputText', () => {
       await input.get('[data-test="input"]').setValue("Grey")
       await input.get('[data-test="clear"]').trigger('click')
       expect(input.props().modelValue).toEqual([])
+    })
+
+    describe('Validation', () => {
+      it('should accept "Light grey"', async () => {
+        const input = mountWidget({ modelValue: ['Grey'], cardinality: 'many', pattern: 'grey' })
+        await input.get('[data-test="input"]').setValue("Light grey")
+        expect(input.get('[data-test="error"]').text()).toBe("")
+        expect(input.props().modelValue).toEqual(['Grey', 'Light grey'])
+      })
+      
+      it('should reject "White"', async () => {
+        const input = mountWidget({ modelValue: ['Grey'], cardinality: 'many', pattern: 'grey' })
+        await input.get('[data-test="input"]').setValue("White")
+        expect(input.get('[data-test="error"]').text()).not.toBe("")
+        expect(input.props().modelValue).toEqual(['Grey'])
+      })
     })
   })
 })
