@@ -1,5 +1,6 @@
 import { WidgetNumber } from '..'
 import { mount } from '@vue/test-utils'
+import { error } from 'console'
 import { describe, expect, it, test } from 'vitest'
 import { defineComponent, markRaw } from 'vue'
 
@@ -7,6 +8,11 @@ const Layout = defineComponent({
   props: {
     value: {
       type: Number,
+      required: false,
+      default: undefined,
+    },
+    error: {
+      type: String,
       required: false,
       default: undefined,
     },
@@ -26,6 +32,8 @@ const Layout = defineComponent({
     <div>
       <input type="text" data-test="input" @input="onInput($event.target.value)" />
       <button data-test="clear" @click.prevent="$emit('clear')" />
+      <button data-test="validate" @click.prevent="$emit('validate')" />
+      <div data-test="error">{{ error }}</div>
     </div>
   `
 })
@@ -36,8 +44,6 @@ describe('InputNumber', () => {
       props: {
         // @ts-ignore
         layout: markRaw(Layout),
-        valid: undefined,
-        error: undefined,
         'onUpdate:modelValue': (newValue: number) => widget.setProps({ modelValue: newValue }),
         ...props ?? {},
       }
@@ -65,6 +71,12 @@ describe('InputNumber', () => {
       const input = mountWidget({ modelValue: 2 })
       await input.get('[data-test="input"]').setValue("A")
       expect(input.props().modelValue).toBe(2)
+    })
+
+    test('required', async () => {
+      const input = mountWidget({ required: true })
+      await input.get('[data-test="validate"]').trigger("click")
+      expect(input.get('[data-test="error"]').text()).not.toBe("")
     })
     
   })
