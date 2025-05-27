@@ -1,3 +1,4 @@
+import Options from './Widget/Options.vue'
 export { default as Stylable, type StylableProps } from './Stylable.vue'
 export { default as Modal } from './Modal.vue'
 
@@ -6,7 +7,7 @@ export type { IWidget, WidgetProps, WidgetLayoutProps, WidgetEmits, WidgetLayout
 export { default as Widget } from './Widget/index.vue'
 
 // Widget Text
-export type { WidgetTextLayoutProps, WidgetTextLayoutEmits } from './Widget/Text.vue'
+export type { WidgetTextLayoutProps } from './Widget/Text.vue'
 export { default as WidgetText } from './Widget/Text.vue'
 
 // Widget Checkbox
@@ -18,5 +19,6 @@ export type { WidgetNumberLayoutProps } from './Widget/Number.vue'
 export { default as WidgetNumber } from './Widget/Number.vue'
 
 // Widget Select
-export type { WidgetOptionsLayoutProps, WidgetOptionsLayoutEmits } from './Widget/Options.vue'
-export { default as WidgetOptions } from './Widget/Options.vue'
+export type { WidgetOptionsProps, WidgetOptionsLayoutProps, WidgetOptionsLayoutEmits } from './Widget/Options.vue'
+export const Collection = Options
+export const WidgetOptions = Options
