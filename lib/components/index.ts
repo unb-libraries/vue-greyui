@@ -1,4 +1,5 @@
 export { default as Stylable, type StylableProps } from './Stylable.vue'
+export { default as Modal } from './Modal.vue'
 
 // Widget
 export type { IWidget, WidgetProps, WidgetLayoutProps, WidgetEmits, WidgetLayoutEmits } from './Widget/index.vue'
