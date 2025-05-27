@@ -46,12 +46,17 @@ const Layout = defineComponent({
       default: undefined,
     },
   },
-  emits: ['toggle', 'add', 'filter', 'clear', 'validate'],
+  emits: ['toggle', 'select', 'unselect', 'add', 'filter', 'clear', 'validate'],
   setup(props, { emit }) {
-    let index = 0
     return {
-      onToggle() {
-        emit('toggle', props.options[index++ % props.options.length])
+      onToggle(index: number[]) {
+        emit('toggle', ...index.map(i => props.options[i]))
+      },
+      onSelect(index: number[]) {
+        emit('select', ...index.map(i => props.options[i]))
+      },
+      onUnselect(index: number[]) {
+        emit('unselect', ...index.map(i => props.options[i]))
       },
       onAdd(value: string) {
         emit('add', value)
@@ -74,9 +79,11 @@ const Layout = defineComponent({
         <div v-if="Array.isArray(value)"><span v-for="(v, i) in value" :key="v" :data-test="key + '.' + i">{{ v }}</span></div>
         <template v-else>{{ value }}</template>
       </div>
-      <button data-test="toggle" @click="onToggle" />
-      <input data-test="other" @input="onAdd($event.target.value)" />
-      <input data-test="filter" @input="onFilter($event.target.value)" />
+      <input data-test="toggle" @input.stop="onToggle($event.target.value.split(',').map(Number))" />
+      <input data-test="select" @input.stop="onSelect($event.target.value.split(',').map(Number))" />
+      <input data-test="unselect" @input.stop="onUnselect($event.target.value.split(',').map(Number))" />
+      <input data-test="other" @input.stop="onAdd($event.target.value)" />
+      <input data-test="filter" @input.stop="onFilter($event.target.value)" />
       <button data-test="clear" @click="onClear" />
       <button data-test="validate" @click="onValidate" />
       <div data-test="error">{{ error }}</div>
@@ -129,14 +136,36 @@ describe('WidgetSelect', async () => {
 
       expect(wrapper.get('[data-test="value"]').text()).toBe('')
     
-      await wrapper.get('[data-test="toggle"]').trigger('click')
+      await wrapper.get('[data-test="toggle"]').setValue('0')
       expect(wrapper.props().modelValue).toBe('Grey')
-      expect(wrapper.get('[data-test="value.0"]').text()).toBe('Grey')
+      expect(wrapper.find('[data-test="value.0"]').text()).toBe('Grey')
+      
+      await wrapper.get('[data-test="toggle"]').setValue('0')
+      expect(wrapper.props().modelValue).toBe('')
+      expect(wrapper.find('[data-test="value.0"]').exists()).toBe(false)
+    })
+    
+    test('select', async () => {
+      const wrapper = mountWidget({ options: useDataProvider(['Grey', 'Light grey', 'Dark grey']) })
+      expect(wrapper.get('[data-test="value"]').text()).toBe('')
+      
+      await wrapper.get('[data-test="select"]').setValue('0')
+      expect(wrapper.props().modelValue).toBe('Grey')
+      expect(wrapper.find('[data-test="value.0"]').text()).toBe('Grey')
+      
+      await wrapper.get('[data-test="select"]').setValue('0')
+      expect(wrapper.props().modelValue).toBe('Grey')
+      expect(wrapper.find('[data-test="value.0"]').text()).toBe('Grey')
+    })
+    
+    test('unselect', async () => {
+      const wrapper = mountWidget({ modelValue: 'Grey', options: useDataProvider(['Grey', 'Light grey', 'Dark grey']) })
+      await wrapper.get('[data-test="unselect"]').setValue('0')
+      expect(wrapper.props().modelValue).toBe('')
     })
 
     test('clear', async () => {
       const wrapper = mountWidget({ modelValue: 'Grey', options: useDataProvider(['Grey', 'Light grey', 'Dark grey']) })
-
       await wrapper.get('[data-test="clear"]').trigger('click')
       expect(wrapper.props().modelValue).toBe(null)
       expect(wrapper.get('[data-test="value"]').text()).toBe('')
@@ -144,7 +173,6 @@ describe('WidgetSelect', async () => {
 
     test('validate', async () => {
       const wrapper = mountWidget({ options: useDataProvider(['Grey', 'Light grey']), min: 1, max: 1 })
-
       await wrapper.get('[data-test="validate"]').trigger('click')
       expect(wrapper.get('[data-test="error"]').text()).not.toBe('')
     })
@@ -152,28 +180,25 @@ describe('WidgetSelect', async () => {
   
   describe('Multi select', () => {
     test('toggle', async () => {
-      const wrapper = mountWidget({ cardinality: 'many' as const, options: useDataProvider(['Grey', 'Light grey', 'Dark grey']) })
+      const wrapper = mountWidget({ modelValue: ['Grey', 'Light grey'], cardinality: 'many' as const, options: useDataProvider(['Grey', 'Light grey', 'Dark grey']) })
+      await wrapper.get('[data-test="toggle"]').setValue('1,2')
+      expect(wrapper.props().modelValue).toEqual(['Grey', 'Dark grey'])
+    })
 
-      expect(wrapper.get('[data-test="value"]').text()).toBe('')
-    
-      await wrapper.get('[data-test="toggle"]').trigger('click')
-      expect(wrapper.props().modelValue.length).toBe(1)
-      
-      await wrapper.get('[data-test="toggle"]').trigger('click')
-      expect(wrapper.props().modelValue.length).toBe(2)
-      
-      await wrapper.get('[data-test="toggle"]').trigger('click')
-      expect(wrapper.props().modelValue.length).toBe(3)
+    test('select', async () => {
+      const wrapper = mountWidget({ modelValue: ['Grey', 'Light grey'], cardinality: 'many', options: useDataProvider(['Grey', 'Light grey', 'Dark grey']) })
+      await wrapper.get('[data-test="select"]').setValue('1,2')
       expect(wrapper.props().modelValue).toEqual(['Grey', 'Light grey', 'Dark grey'])
-      
-      await wrapper.get('[data-test="toggle"]').trigger('click')
-      expect(wrapper.props().modelValue.length).toBe(2)
-      expect(wrapper.props().modelValue).toEqual(['Light grey', 'Dark grey'])
+    })
+    
+    test('unselect', async () => {
+      const wrapper = mountWidget({ modelValue: ['Grey', 'Light grey'], cardinality: 'many', options: useDataProvider(['Grey', 'Light grey', 'Dark grey']) })
+      await wrapper.get('[data-test="unselect"]').setValue('0,1')
+      expect(wrapper.props().modelValue).toEqual([])
     })
 
     test('clear', async () => {
       const wrapper = mountWidget({ modelValue: ['Grey', 'Light grey'], cardinality: 'many' as const, options: useDataProvider(['Grey', 'Light grey', 'Dark grey']) })
-
       await wrapper.get('[data-test="clear"]').trigger('click')
       expect(wrapper.props().modelValue).toBe(null)
       expect(wrapper.get('[data-test="value"]').text()).toBe('')
@@ -181,7 +206,6 @@ describe('WidgetSelect', async () => {
 
     test('validate', async () => {
       const wrapper = mountWidget({ cardinality: 'many', options: useDataProvider(['Grey', 'Light grey']), min: 1, max: 1 })
-
       await wrapper.get('[data-test="validate"]').trigger('click')
       expect(wrapper.get('[data-test="error"]').text()).not.toBe('')
     })
@@ -189,7 +213,6 @@ describe('WidgetSelect', async () => {
 
   test('add', async () => {
     const wrapper = mountWidget({ options: useDataProvider(['Grey', 'Light grey']) })
-
     await wrapper.get('[data-test="other"]').setValue('Dark grey')
     expect(wrapper.get('[data-test="options.2"]').text()).toBe('Dark grey')
   })

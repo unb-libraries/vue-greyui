@@ -13,6 +13,8 @@
     :auto-validate="autoValidate"
     @update:model-value="onUpdate"
     @toggle="onToggle"
+    @select="onSelect"
+    @unselect="onUnselect"
     @add="onAdd"
     @filter="onFilter"
   />
@@ -21,7 +23,7 @@
 <script lang="ts">
 type Cardinality = 'one' | 'many'
 type TData<C extends Cardinality> = C extends 'one' ? string : string[]
-type WidgetOptionsProps<T extends string | number | object = string, C extends Cardinality = 'one'> = {
+export type WidgetOptionsProps<T extends string | number | object = string, C extends Cardinality = 'one'> = {
   cardinality?: C
   options: DataProvider<T>
   labelKey?: T extends object ? keyof T : undefined
@@ -31,7 +33,9 @@ type WidgetOptionsProps<T extends string | number | object = string, C extends C
 } & Omit<WidgetProps<TData<C>>, 'emptyValue'>
 
 export type WidgetOptionsLayoutEmits<T extends string | number | object = string> = {
-  toggle: [option: T]
+  toggle: [...option: T[]]
+  select: [...option: T[]]
+  unselect: [...option: T[]]
   add: [option: T]
   filter: [filter: (item: T) => boolean]
 
@@ -55,9 +59,13 @@ const selected = computed<string[]>(() => Array.isArray(value.value) ? value.val
 const props = defineProps<WidgetOptionsProps<T, C> & WidgetOptionsLayoutProps<T, C>>()
 const emits = defineEmits<WidgetEmits>()
 
+function getKey(option: T) {
+  return (typeof option === 'object' ? option[props.optionKey] : option) as string
+}
 
 const emptyValue = computed(() => props.cardinality === 'many' ? [] : '')
-const options = computed(() => props.options.data.value)
+const optionValues = computed(() => props.options.data.value.map(getKey))
+const options = computed(() => props.options.data.value.filter((o, i) => optionValues.value.indexOf(getKey(o)) === i))
 const bounds = computed(() => [
   props.cardinality === 'many' ? Math.max(0, props.min) : Math.min(1, props.min),
   props.cardinality === 'many' ? Math.max(0, props.max) : Math.min(1, props.max),
@@ -69,16 +77,29 @@ const validators = computed(() => [
 
 function onUpdate(newValue?: string[]) {
   value.value = (!newValue || props.cardinality === 'many'
-    ? newValue
+    ? newValue?.filter((o, i) => newValue.indexOf(o) === i) ?? newValue
     : (newValue[0] ?? emptyValue.value)) as TData<C>
 }
 
-function onToggle(toggled: T) {
-  const option = (typeof toggled === 'object' ? toggled[props.optionKey] : toggled) as string
-  const newValue = selected.value.includes(option)
-    ? selected.value.filter((item) => item !== option)
-    : [...selected.value, option]
-  value.value = (props.cardinality === 'many' ? newValue : newValue[0]) as TData<C>
+function onToggle(...toggled: T[]) {
+  onUpdate(toggled.reduce((selected, item) => {
+    const option = (typeof item === 'object' ? item[props.optionKey] : item) as string
+    return selected.includes(option)
+      ? selected.filter((item) => item !== option)
+      : [...selected, option]
+  }, selected.value))
+}
+
+function onSelect(...added: T[]) {
+  onUpdate([...selected.value, ...added
+    .map(getKey)
+    .filter(Boolean)
+    .filter(option => optionValues.value.includes(option))])
+}
+
+function onUnselect(...unselected: T[]) {
+  console.log('unselect', unselected)
+  onUpdate(selected.value.filter(option => !unselected.map(getKey).includes(option)))
 }
 
 function onAdd(option: T) {
