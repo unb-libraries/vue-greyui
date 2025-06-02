@@ -11,7 +11,8 @@
 </template>
 
 <script lang="ts">
-type WidgetNumberProps<C extends Cardinality> = {
+export type WidgetNumberEmits = WidgetEmits
+export type WidgetNumberProps<C extends Cardinality> = {
   cardinality?: C
   decimals?: number
   min?: C extends 'many' ? number : 0 | 1
@@ -20,7 +21,8 @@ type WidgetNumberProps<C extends Cardinality> = {
   floor?: number
 }
 
-export type WidgetNumberLayoutProps<C extends Cardinality> = StylableProps<WidgetLayoutProps<number, C> & WidgetNumberProps<C>, WidgetLayoutEmits<number, C>>
+export type WidgetNumberLayoutEmits<C extends Cardinality> = WidgetLayoutEmits<number, C>
+export type WidgetNumberLayoutProps<C extends Cardinality> = StylableProps<WidgetLayoutProps<number, C> & WidgetNumberProps<C>, WidgetNumberLayoutEmits<C>>
 </script>
 
 <script lang="ts" setup generic="C extends Cardinality">
@@ -34,7 +36,7 @@ const value = computed<number[]>(() => (props.cardinality === 'many'
   ? modelValue.value ?? []
   : modelValue.value !== undefined ? [modelValue.value] : []) as number[])
 const props = defineProps<WidgetNumberLayoutProps<C> & WidgetNumberProps<C>>()
-defineEmits<WidgetEmits>()
+defineEmits<WidgetNumberEmits>()
 
 const emptyValue = computed<number[] | number>(() => props.cardinality === 'many' ? [] : Math.max(props.floor ?? 0, 0))
 

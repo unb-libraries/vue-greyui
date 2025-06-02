@@ -52,10 +52,10 @@
   "main": "./dist/lib/vue-greyui.umd.js",
   "module": "./dist/lib/vue-greyui.js",
   "exports": {
-    ".": {
-      "import": "./dist/lib/vue-greyui.js",
-      "require": "./dist/lib/vue-greyui.umd.js",
-      "types": "./dist/types/index.d.ts"
+    "./components": {
+      "import": "./dist/lib/components/components.vue-greyui.js",
+      "require": "./dist/lib/components/components.vue-greyui.umd.js",
+      "types": "./dist/types/components.d.ts"
     }
   },
   "types": "./dist/types/index.d.ts",

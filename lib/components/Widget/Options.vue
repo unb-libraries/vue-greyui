@@ -20,6 +20,7 @@
 </template>
 
 <script lang="ts">
+export type WidgetOptionsEmits = WidgetEmits
 export type WidgetOptionsProps<T, C extends Cardinality> = {
   cardinality?: C
   options: DataProvider<T>

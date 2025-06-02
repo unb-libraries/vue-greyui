@@ -1,4 +1,4 @@
-import { useAttrs, useId } from "vue"
+import { useAttrs, useId } from 'vue'
 
 export interface InputAttrsOptions {
   idPrefix: string

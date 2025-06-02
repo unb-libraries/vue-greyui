@@ -1,7 +1,7 @@
-import vue from "@vitejs/plugin-vue"
-import { resolve } from "path"
-import { defineConfig } from "vite"
-import dts from "vite-plugin-dts"
+import vue from '@vitejs/plugin-vue'
+import { resolve } from 'path'
+import { defineConfig } from 'vite'
+import dts from 'vite-plugin-dts'
 import type { ViteUserConfig } from "vitest/config"
 
 // https://vitejs.dev/config/
@@ -19,7 +19,12 @@ export default defineConfig(({ command}): ViteUserConfig => ({
   build: {
     lib: {
       // Could also be a dictionary or array of multiple entry points
-      entry: resolve(__dirname, "lib/index.ts"),
+      entry: {
+        components: resolve(__dirname, "lib/components/index.ts"),
+        composables: resolve(__dirname, "lib/composables/index.ts"),
+        directives: resolve(__dirname, "lib/directives/index.ts"),
+        utils: resolve(__dirname, "lib/utils/index.ts"),
+      },
       name: 'GreyUI',
     },
     outDir: "dist/lib",

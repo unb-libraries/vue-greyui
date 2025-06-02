@@ -1,7 +1,7 @@
 import { WidgetOptions } from '..'
 import { mount } from '@vue/test-utils'
 import { describe, expect, test, vi } from 'vitest'
-import { computed, defineComponent, markRaw, ref } from 'vue'
+import { defineComponent, markRaw, ref } from 'vue'
 import { useDataProvider } from '~/composables'
 
 const Layout = defineComponent({

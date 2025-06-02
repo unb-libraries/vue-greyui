@@ -54,7 +54,8 @@ export type IWidget = {
 <script lang="ts" setup generic="T, C extends Cardinality, P extends WidgetLayoutProps<T, C>, E extends WidgetLayoutEmits<T, C>">
 import { computed, onMounted, ref, watch } from 'vue'
 import { type StylableProps, Stylable as StylableLayout } from '~/components'
-import { useInputAttrs, type Validator } from '~/composables'
+import { useInputAttrs } from '~/composables'
+import type { Validator } from '~/components'
 
 const { id, name, ...attrs } = useInputAttrs()
 const modelValue = defineModel<TData<T, C>>()

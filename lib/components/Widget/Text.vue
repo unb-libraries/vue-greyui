@@ -17,7 +17,7 @@
 </template>
 
 <script lang="ts">
-type WidgetTextProps<C extends Cardinality> = {
+export type WidgetTextProps<C extends Cardinality> = {
   cardinality?: C
   pattern?: string
   min?: C extends 'many' ? number : 0 | 1
@@ -26,7 +26,8 @@ type WidgetTextProps<C extends Cardinality> = {
   required?: C extends 'many' ? undefined : boolean
 }
 
-type WidgetTextLayoutEmits<C extends Cardinality> = WidgetLayoutEmits<string, C> & {
+export type WidgetTextEmits = WidgetEmits
+export type WidgetTextLayoutEmits<C extends Cardinality> = WidgetLayoutEmits<string, C> & {
   add: [newValue: string]
   remove: [indexOrValue: number | string]
 }
@@ -37,7 +38,7 @@ export type WidgetTextLayoutProps<C extends Cardinality> = StylableProps<WidgetL
 import { Widget as WidgetBase, WidgetEmits, WidgetLayoutEmits, WidgetLayoutProps } from "~/components"
 import type { IWidget, StylableProps, TData, Cardinality } from "~/components"
 import { computed, ref } from "vue"
-import { type Validator } from "~/composables"
+import { type Validator } from "~/components"
 
 const widget = ref<IWidget>()
 const value = defineModel<TData<string, C>>({ required: false })
