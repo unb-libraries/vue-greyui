@@ -53,7 +53,6 @@ describe('useDataProvider', () => {
   test("sort", () => {
     const provider = useDataProvider(items)
     provider.sort(({ id: a }, { id: b }) => a < b ? -1 : a > b ? 1 : 0)
-    console.log(provider.data.value)
     expect(provider.keys.value).toEqual(["dark-grey", "grey", "light-grey"])
   })
 })
