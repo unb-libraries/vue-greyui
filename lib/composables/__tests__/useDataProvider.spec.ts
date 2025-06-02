@@ -1,57 +1,59 @@
-import { beforeEach, describe, expect, test } from "vitest"
-import { useDataProvider, type DataProvider } from "../useDataProvider"
+import { describe, expect, test } from 'vitest'
+import { useDataProvider } from '../useDataProvider'
 
 describe('useDataProvider', () => {
-  const items = ["grey", "dark-grey", "mid-grey", "light-grey"]
-  let provider: DataProvider<string>
+  const items = ["grey", ["dark-grey", "Dark grey"], { id: "light-grey", label: "Light grey" }]
 
-  beforeEach(() => {
-    provider = useDataProvider(items)
-    expect(provider.data.value).toEqual(items)
-  })
-
-  test("add", () => {
-    const item = "ultra-light-grey"
-    provider.add(item)
-    expect(provider.data.value).toHaveLength(5)
-    expect(provider.data.value.at(-1)).toBe(item)
+  test("data", () => {
+    const provider = useDataProvider(items)
+    expect(provider.size.value).toBe(3)
+    expect(provider.data.value).toEqual({
+      [`${items[0]}`]: {id: items[0] },
+      [`${items[1][0]}`]: { ...(items[1] as string[]), id: items[1][0] },
+      [`${items[2]['id']}`]: { ...(items[2] as Record<string, string>), id: items[2]['id'] } })
+    })
+    
+    test("add", () => {
+    const provider = useDataProvider(items)
+    provider.add("mid-grey")
+    expect(provider.size.value).toBe(4)
+    expect(provider.data.value['mid-grey']).toEqual({ id: "mid-grey" })
   })
   
-  test("has", () => {
-    expect(provider.has("grey")).toBe(true)
-    expect(provider.has("black")).toBe(false)
-  })
-
   test("filter", () => {
-    provider.filter(item => !/.*-.*/.test(item))
-    expect(provider.data.value).toHaveLength(1)
+    const provider = useDataProvider(items)
+    provider.filter(item => !/.*-.*/.test(typeof item === 'string' ? item : item[0] ?? item['id']))
+    expect(provider.size.value).toBe(1)
   })
-
+  
   test("remove", () => {
+    const provider = useDataProvider([...items, "mid-grey"])
     provider.remove(0)
-    expect(provider.data.value).toHaveLength(3)
-    expect(provider.data.value[0]).toEqual("dark-grey")
+    expect(provider.size.value).toBe(3)
+    expect(provider.keys.value.at(0)).toEqual("dark-grey")
     
     provider.remove(-1)
-    expect(provider.data.value).toHaveLength(2)
-    expect(provider.data.value.at(-1)).toBe("mid-grey")
-
+    expect(provider.size.value).toBe(2)
+    expect(provider.keys.value.at(-1)).toBe("light-grey")
+    
     provider.remove(1)
-    expect(provider.data.value).toHaveLength(1)
-    expect(provider.data.value.at(-1)).toBe("dark-grey")
-
+    expect(provider.size.value).toBe(1)
+    expect(provider.keys.value.at(-1)).toBe("dark-grey")
+    
     provider.remove(1)
-    expect(provider.data.value).toHaveLength(1)
+    expect(provider.size.value).toBe(1)
   })
-
+  
   test("set", () => {
-    const data = ["almost black", "almost white"]
-    provider.set(data)
-    expect(provider.data.value).toEqual(data)
+    const provider = useDataProvider(items)
+    provider.set(["almost black", "almost white"])
+    expect(provider.data.value).toEqual({ "almost black": { id: "almost black" }, "almost white": { id: "almost white" } })
   })
-
+  
   test("sort", () => {
-    provider.sort((a, b) => a < b ? -1 : a > b ? 1 : 0)
-    expect(provider.data.value).toEqual(["dark-grey", "grey", "light-grey", "mid-grey"])
+    const provider = useDataProvider(items)
+    provider.sort(({ id: a }, { id: b }) => a < b ? -1 : a > b ? 1 : 0)
+    console.log(provider.data.value)
+    expect(provider.keys.value).toEqual(["dark-grey", "grey", "light-grey"])
   })
 })

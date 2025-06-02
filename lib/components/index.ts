@@ -3,7 +3,7 @@ export { default as Stylable, type StylableProps } from './Stylable.vue'
 export { default as Modal } from './Modal.vue'
 
 // Widget
-export type { IWidget, WidgetProps, WidgetLayoutProps, WidgetEmits, WidgetLayoutEmits } from './Widget/index.vue'
+export type { Cardinality, TData, IWidget, WidgetProps, WidgetLayoutProps, WidgetEmits, WidgetLayoutEmits } from './Widget/index.vue'
 export { default as Widget } from './Widget/index.vue'
 
 // Widget Text

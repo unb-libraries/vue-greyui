@@ -1,62 +1,22 @@
 import { WidgetOptions } from '..'
 import { mount } from '@vue/test-utils'
 import { describe, expect, test, vi } from 'vitest'
-import { defineComponent, markRaw, ref } from 'vue'
+import { computed, defineComponent, markRaw, ref } from 'vue'
 import { useDataProvider } from '~/composables'
 
 const Layout = defineComponent({
-  props: {
-    value: {
-      type: Array<String>,
-      required: false,
-      default: [],
-    },
-    options: {
-      type: Array,
-      required: true,
-    },
-    labelKey: {
-      type: String,
-      required: false,
-      default: undefined,
-    },
-    optionKey: {
-      type: String,
-      required: false,
-      default: undefined,
-    },
-    min: {
-      type: Number,
-      required: false,
-      default: 0,
-    },
-    max: {
-      type: Number,
-      required: false,
-      default: 1,
-    },
-    valid: {
-      type: Boolean,
-      required: false,
-      default: undefined,
-    },
-    error: {
-      type: String,
-      required: false,
-      default: undefined,
-    },
-  },
+  props: ['value', 'cardinality', 'options', 'labelKey', 'optionKey', 'required', 'min', 'max', 'valid', 'error'],
   emits: ['toggle', 'select', 'unselect', 'add', 'filter', 'clear', 'validate'],
   setup(props, { emit }) {
     return {
       onToggle(index: number[]) {
-        emit('toggle', ...index.map(i => props.options[i]))
+        emit('toggle', ...index.map(i => Object.values(props.options)[i]))
       },
       onSelect(index: number[]) {
-        emit('select', ...index.map(i => props.options[i]))
+        emit('select', ...index.map(i => Object.values(props.options)[i]))
       },
       onUnselect(index: number[]) {
-        emit('unselect', ...index.map(i => props.options[i]))
+        emit('unselect', ...index.map(i => Object.values(props.options)[i]))
       },
       onAdd(value: string) {
         emit('add', value)
@@ -75,10 +35,7 @@ const Layout = defineComponent({
   },
   template: `
     <div>
-      <div v-for="(value,key) of $props" :key="key" :data-test="key">
-        <div v-if="Array.isArray(value)"><span v-for="(v, i) in value" :key="v" :data-test="key + '.' + i">{{ v }}</span></div>
-        <template v-else>{{ value }}</template>
-      </div>
+      <span data-test="value">{{ Array.isArray(value) ? value.join(',') : value }}</span>
       <input data-test="toggle" @input.stop="onToggle($event.target.value.split(',').map(Number))" />
       <input data-test="select" @input.stop="onSelect($event.target.value.split(',').map(Number))" />
       <input data-test="unselect" @input.stop="onUnselect($event.target.value.split(',').map(Number))" />
@@ -95,14 +52,14 @@ describe('WidgetSelect', async () => {
   vi.mock('~/composables/useDataProvider', () => ({
     useDataProvider(data: string[]) {
       let values = ref(data)
+      const mapper = (v: string) => ({ id: v })
       return {
-        data: values,
-        add(value: string) {
-          values.value = [...values.value, value]
-        },
-        filter(filter: (term: string) => boolean) {
-          values.value = values.value.filter(filter)
-        },
+        data: { value: Object.fromEntries(values.value.map(mapper).map(v => [v.id, v])) },
+        size: { value: values.value.length },
+        keys: { value: values.value.map(mapper).map(v => v.id) },
+        values: { value: values.value.map(mapper) },
+        add: vi.fn(() => {}),
+        filter: vi.fn(() => {}),
       }
     }
   }))
@@ -112,6 +69,7 @@ describe('WidgetSelect', async () => {
       props: {
         // @ts-ignore
         layout: markRaw(Layout),
+        options: useDataProvider(['Grey', 'Light grey', 'Dark grey']),
         'onUpdate:modelValue': (newValue: string) => widget.setProps({ modelValue: newValue }),
         ...props ?? {},
       }
@@ -119,109 +77,127 @@ describe('WidgetSelect', async () => {
     return widget
   }
 
-  test('Props', async () => {
-    const wrapper = mountWidget({ options: useDataProvider([]), min: 1, max: 3 })
-
-    expect(wrapper.get('[data-test="min"]').text()).toBe('1')
-    expect(wrapper.get('[data-test="max"]').text()).toBe('1')
-    
-    await wrapper.setProps({ cardinality: 'many' })
-    expect(wrapper.get('[data-test="min"]').text()).toBe('1')
-    expect(wrapper.get('[data-test="max"]').text()).toBe('3')
-  })
-  
   describe('Single select', () => {
     test('toggle', async () => {
-      const wrapper = mountWidget({ options: useDataProvider(['Grey', 'Light grey', 'Dark grey']) })
+      const wrapper = mountWidget()
 
-      expect(wrapper.get('[data-test="value"]').text()).toBe('')
+      expect(wrapper.find('[data-test="value"]').text()).toBe('')
     
       await wrapper.get('[data-test="toggle"]').setValue('0')
       expect(wrapper.props().modelValue).toBe('Grey')
-      expect(wrapper.find('[data-test="value.0"]').text()).toBe('Grey')
+      expect(wrapper.find('[data-test="value"]').text()).toBe('Grey')
       
       await wrapper.get('[data-test="toggle"]').setValue('0')
-      expect(wrapper.props().modelValue).toBe('')
-      expect(wrapper.find('[data-test="value.0"]').exists()).toBe(false)
+      expect(wrapper.props().modelValue).toBe(undefined)
+      expect(wrapper.find('[data-test="value"]').text()).toBe('')
     })
     
     test('select', async () => {
-      const wrapper = mountWidget({ options: useDataProvider(['Grey', 'Light grey', 'Dark grey']) })
+      const wrapper = mountWidget()
       expect(wrapper.get('[data-test="value"]').text()).toBe('')
       
       await wrapper.get('[data-test="select"]').setValue('0')
       expect(wrapper.props().modelValue).toBe('Grey')
-      expect(wrapper.find('[data-test="value.0"]').text()).toBe('Grey')
+      expect(wrapper.find('[data-test="value"]').text()).toBe('Grey')
       
       await wrapper.get('[data-test="select"]').setValue('0')
       expect(wrapper.props().modelValue).toBe('Grey')
-      expect(wrapper.find('[data-test="value.0"]').text()).toBe('Grey')
+      expect(wrapper.find('[data-test="value"]').text()).toBe('Grey')
     })
     
     test('unselect', async () => {
-      const wrapper = mountWidget({ modelValue: 'Grey', options: useDataProvider(['Grey', 'Light grey', 'Dark grey']) })
+      const wrapper = mountWidget({ modelValue: 'Grey' })
       await wrapper.get('[data-test="unselect"]').setValue('0')
-      expect(wrapper.props().modelValue).toBe('')
+      expect(wrapper.props().modelValue).toBe(undefined)
     })
 
-    test('clear', async () => {
-      const wrapper = mountWidget({ modelValue: 'Grey', options: useDataProvider(['Grey', 'Light grey', 'Dark grey']) })
-      await wrapper.get('[data-test="clear"]').trigger('click')
-      expect(wrapper.props().modelValue).toBe(null)
-      expect(wrapper.get('[data-test="value"]').text()).toBe('')
+    describe('clear', () => {
+      test('initialized', async () => {
+        const wrapper = mountWidget({ modelValue: 'Grey' })
+        await wrapper.get('[data-test="clear"]').trigger('click')
+        expect(wrapper.props().modelValue).toBe(null)
+        expect(wrapper.get('[data-test="value"]').text()).toBe('')
+      })
+      
+      test('uninitialized', async () => {
+        const wrapper = mountWidget()
+        await wrapper.setProps({ modelValue: 'Grey' })
+        await wrapper.get('[data-test="clear"]').trigger('click')
+        expect(wrapper.props().modelValue).toBe(undefined)
+        expect(wrapper.get('[data-test="value"]').text()).toBe('')
+      })
     })
 
     test('validate', async () => {
-      const wrapper = mountWidget({ options: useDataProvider(['Grey', 'Light grey']), min: 1, max: 1 })
+      const wrapper = mountWidget({ required: true })
       await wrapper.get('[data-test="validate"]').trigger('click')
       expect(wrapper.get('[data-test="error"]').text()).not.toBe('')
+      
+      await wrapper.setProps({ modelValue: 'Grey' })
+      await wrapper.get('[data-test="validate"]').trigger('click')
+      expect(wrapper.get('[data-test="error"]').text()).toBe('')
     })
   })
   
   describe('Multi select', () => {
     test('toggle', async () => {
-      const wrapper = mountWidget({ modelValue: ['Grey', 'Light grey'], cardinality: 'many' as const, options: useDataProvider(['Grey', 'Light grey', 'Dark grey']) })
+      const wrapper = mountWidget({ modelValue: ['Grey', 'Light grey'], cardinality: 'many' })
       await wrapper.get('[data-test="toggle"]').setValue('1,2')
       expect(wrapper.props().modelValue).toEqual(['Grey', 'Dark grey'])
     })
 
     test('select', async () => {
-      const wrapper = mountWidget({ modelValue: ['Grey', 'Light grey'], cardinality: 'many', options: useDataProvider(['Grey', 'Light grey', 'Dark grey']) })
+      const wrapper = mountWidget({ modelValue: ['Grey', 'Light grey'], cardinality: 'many' })
       await wrapper.get('[data-test="select"]').setValue('1,2')
       expect(wrapper.props().modelValue).toEqual(['Grey', 'Light grey', 'Dark grey'])
     })
     
     test('unselect', async () => {
-      const wrapper = mountWidget({ modelValue: ['Grey', 'Light grey'], cardinality: 'many', options: useDataProvider(['Grey', 'Light grey', 'Dark grey']) })
+      const wrapper = mountWidget({ modelValue: ['Grey', 'Light grey'], cardinality: 'many' })
       await wrapper.get('[data-test="unselect"]').setValue('0,1')
       expect(wrapper.props().modelValue).toEqual([])
     })
 
-    test('clear', async () => {
-      const wrapper = mountWidget({ modelValue: ['Grey', 'Light grey'], cardinality: 'many' as const, options: useDataProvider(['Grey', 'Light grey', 'Dark grey']) })
-      await wrapper.get('[data-test="clear"]').trigger('click')
-      expect(wrapper.props().modelValue).toBe(null)
-      expect(wrapper.get('[data-test="value"]').text()).toBe('')
+    describe('clear', () => {
+      test('initialized', async () => {
+        const wrapper = mountWidget({ modelValue: ['Grey'], cardinality: 'many' })
+        await wrapper.get('[data-test="clear"]').trigger('click')
+        expect(wrapper.props().modelValue).toBe(null)
+        expect(wrapper.get('[data-test="value"]').text()).toBe('')
+      })
+
+      test('uninitialized', async () => {
+        const wrapper = mountWidget({ cardinality: 'many' })
+        await wrapper.setProps({ modelValue: ['Grey'] })
+        await wrapper.get('[data-test="clear"]').trigger('click')
+        expect(wrapper.props().modelValue).toEqual([])
+        expect(wrapper.get('[data-test="value"]').text()).toBe('')
+      })
     })
 
     test('validate', async () => {
-      const wrapper = mountWidget({ cardinality: 'many', options: useDataProvider(['Grey', 'Light grey']), min: 1, max: 1 })
+      const wrapper = mountWidget({ cardinality: 'many', min: 1, max: 1 })
       await wrapper.get('[data-test="validate"]').trigger('click')
       expect(wrapper.get('[data-test="error"]').text()).not.toBe('')
+      
+      await wrapper.setProps({ modelValue: ['Grey'] })
+      await wrapper.get('[data-test="validate"]').trigger('click')
+      expect(wrapper.get('[data-test="error"]').text()).toBe('')
     })
   })
 
-  test('add', async () => {
-    const wrapper = mountWidget({ options: useDataProvider(['Grey', 'Light grey']) })
-    await wrapper.get('[data-test="other"]').setValue('Dark grey')
-    expect(wrapper.get('[data-test="options.2"]').text()).toBe('Dark grey')
+  describe('Options', () => {
+    test('add', async () => {
+      const wrapper = mountWidget()
+      await wrapper.get('[data-test="other"]').setValue('Mid grey')
+      expect(wrapper.props().options.add).toHaveBeenCalledWith('Mid grey')
+    })
+    
+    test('filter', async () => {
+      const wrapper = mountWidget()
+      await wrapper.get('[data-test="filter"]').setValue('Light')
+      expect(wrapper.props().options.filter).toHaveBeenCalledWith(expect.any(Function))
+    })
   })
-  
-  test('filter', async () => {
-    const options = useDataProvider(['Grey', 'Light grey'])
-    const wrapper = mountWidget({ options })
 
-    await wrapper.get('[data-test="filter"]').setValue('Light')
-    expect(wrapper.get('[data-test="options.0"]').text()).toBe('Light grey')
-  })
 })

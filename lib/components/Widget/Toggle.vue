@@ -3,9 +3,10 @@
     ref="widget"
     :layout="layout"
     :model-value="value"
+    :cardinality="'one'"
+    :required="required"
     :label="label"
     :empty-value="false"
-    :validators="validators"
     :auto-validate="true"
     @update:model-value="(newValue: boolean) => $emit('update:modelValue', newValue)"
   />
@@ -21,7 +22,8 @@ type WidgetToggleProps = {
   label: string
   required?: boolean
 }
-export type WidgetToggleLayoutProps = StylableProps<WidgetLayoutProps<boolean> & WidgetToggleProps, WidgetLayoutEmits<boolean>>
+
+export type WidgetToggleLayoutProps = StylableProps<WidgetLayoutProps<boolean, 'one'> & WidgetToggleProps, WidgetLayoutEmits<boolean, 'one'>>
 
 const widget = ref<IWidget>()
 const value = defineModel<boolean>()

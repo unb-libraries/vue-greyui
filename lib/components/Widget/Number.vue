@@ -4,41 +4,48 @@
     :layout="layout"
     :model-value="value"
     :decimals="decimals"
-    :empty-value="emptyValue"
-    :validators="validators"
+    :empty-value="[]"
     :auto-validate="false"
     @update:model-value="onUpdate"
   />
 </template>
 
-<script lang="ts" setup>
-import { type Validator } from "~/composables"
+<script lang="ts">
+type WidgetNumberProps<C extends Cardinality> = {
+  cardinality?: C
+  decimals?: number
+  min?: C extends 'many' ? number : 0 | 1
+  max?: C extends 'many' ? number : 1
+  ceil?: number
+  floor?: number
+}
+
+export type WidgetNumberLayoutProps<C extends Cardinality> = StylableProps<WidgetLayoutProps<number, C> & WidgetNumberProps<C>, WidgetLayoutEmits<number, C>>
+</script>
+
+<script lang="ts" setup generic="C extends Cardinality">
 import { computed, ref } from 'vue'
-import type { IWidget, WidgetLayoutProps, StylableProps, WidgetLayoutEmits, WidgetEmits } from '~/components'
+import type { IWidget, WidgetLayoutProps, StylableProps, WidgetLayoutEmits, WidgetEmits, TData, Cardinality } from '~/components'
 import { Widget as WidgetBase } from '~/components'
 
-type WidgetNumberProps = {
-  decimals?: number
-  required?: boolean
-  min?: number
-  max?: number
-}
-export type WidgetNumberLayoutProps = StylableProps<WidgetLayoutProps<number> & WidgetNumberProps, WidgetLayoutEmits<number>>
-
 const widget = ref<IWidget>()
-const value = defineModel<number>()
-const props = defineProps<WidgetNumberLayoutProps & WidgetNumberProps>()
+const modelValue = defineModel<TData<number, C>>()
+const value = computed<number[]>(() => (props.cardinality === 'many'
+  ? modelValue.value ?? []
+  : modelValue.value !== undefined ? [modelValue.value] : []) as number[])
+const props = defineProps<WidgetNumberLayoutProps<C> & WidgetNumberProps<C>>()
 defineEmits<WidgetEmits>()
 
-const emptyValue = computed(() => Math.max(props.min ?? 0, 0))
-const validators = computed(() => [
-  props.required && ((value: number) => !isNaN(value) || 'Value is required.'),
-].filter(Boolean) as Validator[])
+const emptyValue = computed<number[] | number>(() => props.cardinality === 'many' ? [] : Math.max(props.floor ?? 0, 0))
 
-function onUpdate(newValue?: number) {
-  value.value = !newValue
+function onUpdate(newValue?: number[]) {
+  const validatedNewValue =
+    (v: number) => Math.min(Math.max(v, props.floor ?? -Infinity), props.ceil ?? Infinity)
+  modelValue.value = (!newValue
     ? newValue
-    : Math.min(Math.max(newValue, props.min ?? -Infinity), props.max ?? Infinity)
+    : props.cardinality === 'many'
+      ? newValue.map(validatedNewValue)
+      : validatedNewValue(newValue[0] ?? emptyValue.value as number)) as TData<number, C>
 }
 
 defineExpose({

@@ -4,29 +4,16 @@ import { describe, expect, it, test } from 'vitest'
 import { defineComponent, markRaw } from 'vue'
 
 const Layout = defineComponent({
-  props: {
-    value: {
-      type: Array<String>,
-      required: false,
-      default: undefined,
-    },
-    cardinality: {
-      type: String,
-      required: false,
-      default: 'one',
-    },
-    error: {
-      type: String,
-      required: false,
-      default: undefined,
-    },
-  },
+  
+  props: ['value', 'cardinality', 'error'],
   emits: ['input', 'add', 'remove', 'clear', 'validate'],
   template: `
     <div>
-      <input v-if="cardinality !== 'many'" type="text" data-test="input" @input="$emit('input', [$event.target.value])" />
-      <input v-if="cardinality === 'many'" type="text" data-test="add" @input="$emit('add', $event.target.value)" />
-      <input v-if="cardinality === 'many'" type="text" data-test="remove" @input="$emit('remove', $event.target.value)" />
+      <input v-if="!Array.isArray(value)" type="text" data-test="input" @input.stop="$emit('input', $event.target.value)" />
+      <template v-else>
+        <input type="text" data-test="add" @input.stop="$emit('add', $event.target.value)" />
+        <input type="text" data-test="remove" @input.stop="$emit('remove', $event.target.value)" />
+      </template>
       <button data-test="clear" @click.prevent="$emit('clear')" />
       <button data-test="validate" @click.prevent="$emit('validate')" />
       <div data-test="error">{{ error }}</div>
@@ -48,28 +35,33 @@ describe('InputText', () => {
   }
 
   describe('Single-value', () => {
-    test('new value should replace the current one', async () => {
+    test('set', async () => {
+      // new value replaces existing one
       const input = mountWidget()
       
       await input.get('[data-test="input"]').setValue("Grey")
       expect(input.props().modelValue).toEqual("Grey")
       
-      await input.get('[data-test="input"]').setValue("Grey")
-      expect(input.props().modelValue).toEqual("Grey")
+      await input.get('[data-test="input"]').setValue("Light grey")
+      expect(input.props().modelValue).toEqual("Light grey")
     })
 
-    test('clearing should yield "null" if previously initialized', async () => {
-      const input = mountWidget({ modelValue: 'Grey',  })
-      await input.get('[data-test="clear"]').trigger('click')
-      expect(input.props().modelValue).toBe(null)
+    describe('clear', () => {
+      test('initialized', async () => {
+        // "null" if previously initialized
+        const input = mountWidget({ modelValue: 'Grey',  })
+        await input.get('[data-test="clear"]').trigger('click')
+        expect(input.props().modelValue).toBe(null)
+      })
+      
+      test('uninitialized', async () => {
+        // "null" if previously initialized
+        const input = mountWidget()
+        await input.get('[data-test="clear"]').trigger('click')
+        expect(input.props().modelValue).toBe("")
+      })
     })
     
-    test('clearing should yield "" if previously NOT initialized', async () => {
-      const input = mountWidget()
-      await input.get('[data-test="clear"]').trigger('click')
-      expect(input.props().modelValue).toBe("")
-    })
-
     describe('Validation', () => {
       it('should accept "Light grey"', async () => {
         const input = mountWidget({ modelValue: 'Light grey', pattern: 'grey' })
@@ -123,11 +115,11 @@ describe('InputText', () => {
     test('Validation', async () => {
       const input = mountWidget({ cardinality: 'many', min: 1 })
       await input.get('[data-test="validate"]').trigger("click")
-      expect(input.get('[data-test="error"]').text()).not.toBe("")
+      expect(input.get('[data-test="error"]').text()).not.toEqual("")
 
       input.setProps({ modelValue: ['Grey'] })
       await input.get('[data-test="validate"]').trigger("click")
-      expect(input.get('[data-test="error"]').text()).toBe("")
+      expect(input.get('[data-test="error"]').text()).toEqual("")
     })
   })
 })

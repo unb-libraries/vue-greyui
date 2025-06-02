@@ -6,7 +6,7 @@ import { defineComponent, markRaw } from 'vue'
 const Layout = defineComponent({
   props: {
     value: {
-      type: Boolean,
+      type: [Boolean, Array<Boolean>],
       required: false,
       default: false,
     },

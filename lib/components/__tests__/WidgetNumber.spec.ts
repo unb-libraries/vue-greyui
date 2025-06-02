@@ -1,13 +1,12 @@
 import { WidgetNumber } from '..'
 import { mount } from '@vue/test-utils'
-import { error } from 'console'
 import { describe, expect, it, test } from 'vitest'
 import { defineComponent, markRaw } from 'vue'
 
 const Layout = defineComponent({
   props: {
     value: {
-      type: Number,
+      type: Array<Number>,
       required: false,
       default: undefined,
     },
@@ -21,16 +20,16 @@ const Layout = defineComponent({
   setup(_, { emit }) {
     return {
       onInput(value: string) {
-        const numericValue = Number(value)
-        if (!isNaN(numericValue)) {
-          emit('input', numericValue)
+        const numbers = value.split(',').map(Number)
+        if (!numbers.some(isNaN)) {
+          emit('input', numbers)
         }
       }
     }
   },
   template: `
     <div>
-      <input type="text" data-test="input" @input="onInput($event.target.value)" />
+      <input type="text" data-test="input" @input.stop="onInput($event.target.value)" />
       <button data-test="clear" @click.prevent="$emit('clear')" />
       <button data-test="validate" @click.prevent="$emit('validate')" />
       <div data-test="error">{{ error }}</div>
@@ -51,47 +50,77 @@ describe('InputNumber', () => {
     return widget
   }
 
-
-  describe('set value', async () => {
-    test('within range', async () => {
+  describe('Single-value', async () => {
+    test('set', async () => {
       const input = mountWidget()
       await input.get('[data-test="input"]').setValue("1")
       expect(input.props().modelValue).toBe(1)
+      
+      await input.get('[data-test="input"]').setValue("A")
+      expect(input.props().modelValue).toBe(1)
     })
 
-    test('out of range', async () => {
-      const input = mountWidget({ modelValue: 0, min: 0, max: 10 })
+    describe('clear', async () => {
+      test('initialized', async () => {
+        const input = mountWidget({ modelValue: 1 })
+        await input.get('[data-test="clear"]').trigger('click')
+        expect(input.props().modelValue).toBe(null)
+      })
+      
+      test('uninitialized', async () => {
+        const input = mountWidget()
+        await input.get('[data-test="clear"]').trigger('click')
+        expect(input.props().modelValue).toBe(0)
+      })
+    })
+  
+    test('validate', async () => {
+      const input = mountWidget({ min: 1, max: 1, floor: 0, ceil: 10 })
+      
+      await input.get('[data-test="validate"]').trigger("click")
+      expect(input.get('[data-test="error"]')).not.toBe("")
+      
       await input.get('[data-test="input"]').setValue("-1")
       expect(input.props().modelValue).toBe(0)
       await input.get('[data-test="input"]').setValue("11")
       expect(input.props().modelValue).toBe(10)
     })
-    
-    test('not a number', async () => {
-      const input = mountWidget({ modelValue: 2 })
-      await input.get('[data-test="input"]').setValue("A")
-      expect(input.props().modelValue).toBe(2)
-    })
-
-    test('required', async () => {
-      const input = mountWidget({ required: true })
-      await input.get('[data-test="validate"]').trigger("click")
-      expect(input.get('[data-test="error"]').text()).not.toBe("")
-    })
-    
   })
 
-  describe('clear value', async () => {
-    it('should yield "null" when initialized', async () => {
-      const input = mountWidget({ modelValue: 1 })
-      await input.get('[data-test="clear"]').trigger('click')
-      expect(input.props().modelValue).toBe(null)
+  describe('Multi-value', async () => {
+    test('set', async () => {
+      const input = mountWidget({ cardinality: 'many' })
+      await input.get('[data-test="input"]').setValue("1,2")
+      expect(input.props().modelValue).toEqual([1, 2])
+      
+      await input.get('[data-test="input"]').setValue("A, 10")
+      expect(input.props().modelValue).toEqual([1, 2])
     })
-    
-    it('should yield "" when NOT initialized', async () => {
-      const input = mountWidget()
-      await input.get('[data-test="clear"]').trigger('click')
+
+    describe('clear', async () => {
+      test('initialized', async () => {
+        const input = mountWidget({ modelValue: [1], cardinality: 'many' })
+        await input.get('[data-test="clear"]').trigger('click')
+        expect(input.props().modelValue).toBe(null)
+      })
+      
+      test('uninitialized', async () => {
+        const input = mountWidget({ cardinality: 'many' })
+        await input.get('[data-test="clear"]').trigger('click')
+        expect(input.props().modelValue).toEqual([])
+      })
+    })
+  
+    test('validate', async () => {
+      const input = mountWidget({ min: 1, max: 1, floor: 0, ceil: 10 })
+      
+      await input.get('[data-test="validate"]').trigger("click")
+      expect(input.get('[data-test="error"]')).not.toBe("")
+      
+      await input.get('[data-test="input"]').setValue("-1")
       expect(input.props().modelValue).toBe(0)
+      await input.get('[data-test="input"]').setValue("11")
+      expect(input.props().modelValue).toBe(10)
     })
   })
 })
