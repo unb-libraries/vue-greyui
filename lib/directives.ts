@@ -1,0 +1,1 @@
+export * as vNav from '~/directives/vNav';

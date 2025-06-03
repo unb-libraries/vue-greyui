@@ -1,7 +1,7 @@
-import { Widget } from '..'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it, test } from 'vitest'
 import { defineComponent, markRaw } from 'vue'
+import { Widget } from '../../components'
 
 const Layout = defineComponent({
   props: ['value', 'cardinality', 'required', 'min', 'max', 'valid', 'error'],

@@ -10,6 +10,7 @@ export default defineConfig(({ command}): ViteUserConfig => ({
     vue(),
     dts({
       outDir: "dist/types",
+      entryRoot: "lib",
       include: ["lib/**/*.ts"],
       exclude: ["lib/**/__tests__/**/*"],
       tsconfigPath: resolve(__dirname, "lib/tsconfig.json"),
@@ -20,10 +21,10 @@ export default defineConfig(({ command}): ViteUserConfig => ({
     lib: {
       // Could also be a dictionary or array of multiple entry points
       entry: {
-        components: resolve(__dirname, "lib/components/index.ts"),
-        composables: resolve(__dirname, "lib/composables/index.ts"),
-        directives: resolve(__dirname, "lib/directives/index.ts"),
-        utils: resolve(__dirname, "lib/utils/index.ts"),
+        components: resolve(__dirname, "lib/components.ts"),
+        composables: resolve(__dirname, "lib/composables.ts"),
+        directives: resolve(__dirname, "lib/directives.ts"),
+        utils: resolve(__dirname, "lib/utils.ts"),
       },
       name: 'GreyUI',
     },

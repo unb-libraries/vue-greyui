@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 
 test('export all components', async () => {
-  const index = await import('../index')
+  const index = await import('../../components')
   expect(index).toHaveProperty('Collection')
   expect(index).toHaveProperty('Stylable')
   expect(index).toHaveProperty('Modal')

@@ -1,7 +1,7 @@
-import { WidgetToggle } from '..'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it, test } from 'vitest'
 import { defineComponent, markRaw } from 'vue'
+import { WidgetToggle } from '../../components'
 
 const Layout = defineComponent({
   props: {

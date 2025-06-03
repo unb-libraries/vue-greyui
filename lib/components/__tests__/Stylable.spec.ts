@@ -1,7 +1,7 @@
-import { Stylable } from '..'
 import { mount } from '@vue/test-utils'
 import { describe, expect, test, vi } from 'vitest'
 import { defineComponent, markRaw } from 'vue'
+import { Stylable } from '../../components'
 import type { Component} from 'vue'
 
 const Light = defineComponent({

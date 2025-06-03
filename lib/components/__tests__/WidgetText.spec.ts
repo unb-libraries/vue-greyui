@@ -1,7 +1,7 @@
-import { WidgetText } from '..'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it, test } from 'vitest'
 import { defineComponent, markRaw } from 'vue'
+import { WidgetText } from '../../components'
 
 const Layout = defineComponent({
   
