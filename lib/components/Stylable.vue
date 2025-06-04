@@ -5,7 +5,7 @@
 <script lang="ts" setup generic="P, E extends EmitsOptions | Record<string, any[]> = {}">
 import type { Component, ComputedOptions, MethodOptions, EmitsOptions } from "vue"
 import { computed } from "vue"
-import { resolveLayout } from "~/utils"
+import { layoutLoader } from "~/utils"
 
 export type StylableProps<P, E extends EmitsOptions | Record<string, unknown[]> = undefined> = {
   layout?: string | Component<P, unknown, unknown, ComputedOptions, MethodOptions, E>
@@ -13,10 +13,11 @@ export type StylableProps<P, E extends EmitsOptions | Record<string, unknown[]> 
 
 const props = defineProps<StylableProps<P, E>>()
 
-
 const StylableLayout = computed(() => {
+  let layout
   if (!props.layout || typeof props.layout === 'string') {
-    return resolveLayout(this, props.layout as string || 'default')
+    layout = layoutLoader.loadLayout(props.layout as string)
+    return layout.default
   }
   return props.layout
 })

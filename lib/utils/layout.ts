@@ -1,27 +1,44 @@
 import type { Component } from 'vue'
 
-interface LayoutOptions {
-  name: string
-  default: boolean
-}
+class LayoutLoaderSingleton {
+  private layouts = new Map<string, Component>()
+  private basePath = ''
 
-const layouts = new Map<Component, Record<string, Component>>()
-export function getLayouts() {
-  return layouts
-}
+  setLayoutBasePath(path: string) {
+    this.basePath = path.replace(/\/+$/, '')
+  }
 
-export function registerLayout(layout: Component, component: Component, options?: Partial<LayoutOptions>) {
-  const layoutName = options?.name || 'default'
-  layouts.set(component, { ...getLayouts().get(component) || {}, [layoutName]: layout })
-  if (options?.default) {
-    registerLayout(layout, component, { name: 'default' })
+  registerLayouts(newLayouts: Record<string, Component>) {
+    Object.entries(newLayouts).forEach(([key, layout]) => {
+      let path = key.startsWith(this.basePath) ? key.replace(this.basePath, '') : `${this.basePath}/${key}`
+      path = path.replace(/^\/+/, '')
+      path = path.endsWith('.vue') ? path : `${path}.vue`
+      this.layouts.set(path.toLowerCase(), layout)
+    })
+  }
+  
+  loadLayout(nameOrLayout?: string | Component): Component {
+    if (!nameOrLayout || typeof nameOrLayout === 'string') {
+      const name = nameOrLayout as string ?? 'Default'
+      const path = name.toLowerCase().replace(/^\/+/, '').replace(/\/+$/, '')
+      const layout = this.layouts.get(path.endsWith('.vue') ? path : `${path}.vue`)
+      if (layout) {
+        return layout
+      }
+      // fallback: empty layout
+      return {
+        render() {
+          return null
+        }
+      }
+    } else {
+      return nameOrLayout as Component
+    }
   }
 }
 
-export function resolveLayout(component: Component, layoutName?: string) {
-  const layout = getLayouts().get(component)?.[layoutName || 'default']
-  if (layout) {
-    return layout
-  }
-  throw new Error(`Layout "${layoutName || 'default'}" not found${ component.name && ` for component "${component.name}"` || '' }`)
+const globalAny = globalThis as any
+if (!globalAny.__vue_greyui_layoutLoader) {
+  globalAny.__vue_greyui_layoutLoader = new LayoutLoaderSingleton()
 }
+export const layoutLoader: LayoutLoaderSingleton = globalAny.__vue_greyui_layoutLoader
