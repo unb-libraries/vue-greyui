@@ -11,7 +11,7 @@ export default defineConfig(({ command}): ViteUserConfig => ({
     dts({
       outDir: "dist/types",
       entryRoot: "lib",
-      include: ["lib/**/*.ts"],
+      include: ["lib/**/*.ts", "lib/**/*.vue"],
       exclude: ["lib/**/__tests__/**/*"],
       tsconfigPath: resolve(__dirname, "lib/tsconfig.json"),
     }),
