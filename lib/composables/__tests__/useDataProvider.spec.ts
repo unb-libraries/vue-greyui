@@ -11,9 +11,23 @@ describe('useDataProvider', () => {
       [`${items[0]}`]: {id: items[0] },
       [`${items[1][0]}`]: { ...(items[1] as string[]), id: items[1][0] },
       [`${items[2]['id']}`]: { ...(items[2] as Record<string, string>), id: items[2]['id'] } })
+  })
+
+  describe("groups", () => {
+    test("default group", () => {
+      const provider = useDataProvider(["grey", "dark-grey", "light-grey"])
+      expect(provider.groups.keys.value).toEqual(["default"])
     })
     
-    test("add", () => {
+    test("custom group", () => {
+      const provider = useDataProvider(items, { group: (item) => typeof item === 'string' ? 'base' : 'shades' })
+      expect(provider.groups.keys.value).toEqual(["base", "shades"])
+      expect(Object.values(provider.groups.data.value["base"]).map(({ id }) => id)).toEqual(["grey"])
+      expect(Object.values(provider.groups.data.value["shades"]).map(({ id }) => id)).toEqual(["dark-grey", "light-grey"])
+    })
+  })
+    
+  test("add", () => {
     const provider = useDataProvider(items)
     provider.add("mid-grey")
     expect(provider.size.value).toBe(4)
