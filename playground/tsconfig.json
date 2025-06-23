@@ -1,0 +1,38 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "./",
+    "declaration": true,
+    "declarationDir": "../dist/types",
+    "isolatedModules": false,
+    "jsx": "preserve",
+    "lib": [
+      "ES2020",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    /* Imports */
+    "paths": {
+      "~": [
+        "../lib/index.ts"
+      ],
+      "~/*": [
+        "../lib/*"
+      ],
+      "@playground": [
+        "./src"
+      ],
+      "@playground/*": [
+        "./src/*"
+      ]
+    },
+    "target": "ES2020",
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "useDefineForClassFields": true
+  },
+  "include": [
+    "./**/*.ts",
+    "./**/*.tsx",
+    "./**/*.vue"
+  ]
+}

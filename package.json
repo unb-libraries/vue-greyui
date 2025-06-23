@@ -15,6 +15,7 @@
     "dev": "vite",
     "build": "vue-tsc -b && vite build && cp ./lib/shims-vue.d.ts ./dist/types/shims-vue.d.ts",
     "preview": "vite preview",
+    "playground": "npm run dev --workspace=playground",
     "lint": "eslint .",
     "lint:inspect": "npx @eslint/config-inspector@latest",
     "lint:commit": "npx eslint $(find $(git diff --diff-filter=d --name-only --cached | xargs) -type f -name \"*.ts\") --no-error-on-unmatched-pattern",
@@ -51,31 +52,34 @@
   ],
   "exports": {
     ".": {
+      "types": "./dist/types/index.d.ts",
       "import": "./dist/lib/index.js",
-      "require": "./dist/lib/index.cjs",
-      "types": "./dist/types/index.d.ts"
+      "require": "./dist/lib/index.cjs"
     },
     "./components": {
+      "types": "./dist/types/components.d.ts",
       "import": "./dist/lib/components.js",
-      "require": "./dist/lib/components.cjs",
-      "types": "./dist/types/components.d.ts"
+      "require": "./dist/lib/components.cjs"
     },
     "./composables": {
+      "types": "./dist/types/composables.d.ts",
       "import": "./dist/lib/composables.js",
-      "require": "./dist/lib/composables.cjs",
-      "types": "./dist/types/composables.d.ts"
+      "require": "./dist/lib/composables.cjs"
     },
     "./directives": {
+      "types": "./dist/types/directives.d.ts",
       "import": "./dist/lib/directives.js",
-      "require": "./dist/lib/directives.cjs",
-      "types": "./dist/types/directives.d.ts"
+      "require": "./dist/lib/directives.cjs"
     },
     "./utils": {
+      "types": "./dist/types/utils.d.ts",
       "import": "./dist/lib/utils.js",
-      "require": "./dist/lib/utils.cjs",
-      "types": "./dist/types/utils.d.ts"
+      "require": "./dist/lib/utils.cjs"
     }
   },
   "types": "./dist/types/index.d.ts",
-  "typings": "./dist/types/index.d.ts"
+  "typings": "./dist/types/index.d.ts",
+  "workspaces": [
+    "playground"
+  ]
 }
