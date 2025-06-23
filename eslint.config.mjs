@@ -14,8 +14,8 @@ export default teslint.config(
   },
   { 
     files: [
-      `lib/**/*.ts`,
       `lib/**/*.{ts,vue}`,
+      `playground/**/*.{ts,vue}`,
     ],
     languageOptions: {
       parserOptions: {

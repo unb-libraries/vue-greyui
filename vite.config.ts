@@ -2,10 +2,9 @@ import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
 import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
-import type { ViteUserConfig } from "vitest/config"
 
 // https://vitejs.dev/config/
-export default defineConfig(({ command}): ViteUserConfig => ({
+export default defineConfig(({ command }) => ({
   plugins: [
     vue(),
     dts({
