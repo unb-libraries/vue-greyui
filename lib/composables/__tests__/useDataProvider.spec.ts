@@ -5,68 +5,96 @@ describe('useDataProvider', () => {
   const items = ["grey", ["dark-grey", "Dark grey"], { id: "light-grey", label: "Light grey" }]
 
   test("data", () => {
-    const provider = useDataProvider(items)
-    expect(provider.size.value).toBe(3)
-    expect(provider.data.value).toEqual({
-      [`${items[0]}`]: {id: items[0] },
-      [`${items[1][0]}`]: { ...(items[1] as string[]), id: items[1][0] },
-      [`${items[2]['id']}`]: { ...(items[2] as Record<string, string>), id: items[2]['id'] } })
+    const { data } = useDataProvider(items)
+    expect(data.value).toEqual({
+      grey: "grey",
+      "dark-grey": ["dark-grey", "Dark grey"],
+      "light-grey": { id: "light-grey", label: "Light grey" },
+    })
   })
-
+  
   describe("groups", () => {
     test("default group", () => {
-      const provider = useDataProvider(["grey", "dark-grey", "light-grey"])
-      expect(provider.groups.keys.value).toEqual(["default"])
+      const { groups } = useDataProvider(items)
+      expect(groups.value).toEqual({
+        default: {
+          grey: "grey",
+          "dark-grey": ["dark-grey", "Dark grey"],
+          "light-grey": { id: "light-grey", label: "Light grey" }
+        }
+      })
     })
     
     test("custom group", () => {
-      const provider = useDataProvider(items, { group: (item) => typeof item === 'string' ? 'base' : 'shades' })
-      expect(provider.groups.keys.value).toEqual(["base", "shades"])
-      expect(Object.values(provider.groups.data.value["base"]).map(({ id }) => id)).toEqual(["grey"])
-      expect(Object.values(provider.groups.data.value["shades"]).map(({ id }) => id)).toEqual(["dark-grey", "light-grey"])
+      const { groups } = useDataProvider(items, { group: (item) => typeof item === 'string' ? 'base' : 'shades' })
+      expect(groups.value).toEqual({
+        base: { grey: "grey" },
+        shades: {
+          "dark-grey": ["dark-grey", "Dark grey"],
+          "light-grey": { id: "light-grey", label: "Light grey" }
+        }
+      })
     })
   })
-    
-  test("add", () => {
-    const provider = useDataProvider(items)
-    provider.add("mid-grey")
-    expect(provider.size.value).toBe(4)
-    expect(provider.data.value['mid-grey']).toEqual({ id: "mid-grey" })
+
+  test("keys", () => {
+    const { keys } = useDataProvider(items)
+    expect(keys.value).toEqual(["grey", "dark-grey", "light-grey"])
   })
-  
-  test("filter", () => {
-    const provider = useDataProvider(items)
-    provider.filter(item => !/.*-.*/.test(typeof item === 'string' ? item : item[0] ?? item['id']))
-    expect(provider.size.value).toBe(1)
+
+  test("values", () => {
+    const { values } = useDataProvider(items)
+    expect(values.value).toEqual(["grey", ["dark-grey", "Dark grey"], { id: "light-grey", label: "Light grey" }])
   })
-  
+
+  test("entries", () => {
+    const { entries } = useDataProvider(items)
+    expect(entries.value).toEqual([
+      ["grey", "grey"],
+      ["dark-grey", ["dark-grey", "Dark grey"]],
+      ["light-grey", { id: "light-grey", label: "Light grey" }]
+    ])
+  })
+
+  test('size', () => {
+    const { size } = useDataProvider(items)
+    expect(size.value).toBe(3)
+  })
+
+  test('set', () => {
+    const { data, set } = useDataProvider(items)
+    set(["almost black", "almost white"])
+    expect(data.value).toEqual({
+      "almost black": "almost black",
+      "almost white": "almost white",
+    })
+  })
+
+  test('add', () => {
+    const { data, add } = useDataProvider(items)
+    add("mid-grey")
+    expect(data.value['mid-grey']).toEqual("mid-grey")
+  })
+
   test("remove", () => {
-    const provider = useDataProvider([...items, "mid-grey"])
-    provider.remove(0)
-    expect(provider.size.value).toBe(3)
-    expect(provider.keys.value.at(0)).toEqual("dark-grey")
-    
-    provider.remove(-1)
-    expect(provider.size.value).toBe(2)
-    expect(provider.keys.value.at(-1)).toBe("light-grey")
-    
-    provider.remove(1)
-    expect(provider.size.value).toBe(1)
-    expect(provider.keys.value.at(-1)).toBe("dark-grey")
-    
-    provider.remove(1)
-    expect(provider.size.value).toBe(1)
+    const { keys, remove } = useDataProvider(items)
+    remove("dark-grey")
+    expect(keys.value).toEqual(["grey", "light-grey"])
   })
-  
-  test("set", () => {
-    const provider = useDataProvider(items)
-    provider.set(["almost black", "almost white"])
-    expect(provider.data.value).toEqual({ "almost black": { id: "almost black" }, "almost white": { id: "almost white" } })
+
+  test('filter', () => {
+    const { keys, filter } = useDataProvider(items)
+    filter(item => !/.*-.*/.test(typeof item === 'string' ? item : item[0] ?? item['id']))
+    expect(keys.value).toEqual(["grey"])
   })
-  
-  test("sort", () => {
-    const provider = useDataProvider(items)
-    provider.sort(({ id: a }, { id: b }) => a < b ? -1 : a > b ? 1 : 0)
-    expect(provider.keys.value).toEqual(["dark-grey", "grey", "light-grey"])
+
+  test('sort', () => {
+    const { keys, sort } = useDataProvider(items)
+    sort((a, b) => {
+      const vA = a[0] ?? a['id'] ?? a
+      const vB = b[0] ?? b['id'] ?? b
+      return vA < vB ? -1 : vA > vB ? 1 : 0
+    })
+    expect(keys.value).toEqual(["dark-grey", "grey", "light-grey"])
   })
 })

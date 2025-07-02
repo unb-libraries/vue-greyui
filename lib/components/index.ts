@@ -1,3 +1,5 @@
 export * from './Widget'
-export * from './Modal.vue'
-export * from './Stylable.vue'
+
+export { default as Primitive, type PrimitiveProps } from './Primitive.vue'
+export { default as Collection, type CollectionProps, type CollectionInjection } from './Collection.vue'
+export { type CollectionItemInjection } from './CollectionItem.vue'

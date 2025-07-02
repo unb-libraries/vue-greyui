@@ -1,3 +1,4 @@
+import forms from '@tailwindcss/forms'
 import plugin from 'tailwindcss/plugin'
 import type { Config } from 'tailwindcss'
 
@@ -87,6 +88,8 @@ const colors = {
   ...generateColorVariantMap('base', `#495966`, { padding: 6 }),
   ...generateColorVariantMap('primary', `#ea0029`, { step: 10, count: 5 }),
   ...generateColorVariantMap('accent', `#40a9c1`, { step: 10, count: 5 }),
+  'red': '#ea0029',
+  'yellow': '#fadb14',
   'black': `#000000`,
   'white': `#ffffff`,
   'transparent': `transparent`,
@@ -179,6 +182,7 @@ export default {
     },
   },
   plugins: [
+    forms,
     plugin(function ({ theme, addComponents }) {
       addComponents({
         // Widget
@@ -218,7 +222,6 @@ export default {
           border: `0`,
           outline: `0`,
           boxShadow: `none`,
-          color: theme('colors.base-94'),
         },
         '.input:focus': {
           outline: `0`,

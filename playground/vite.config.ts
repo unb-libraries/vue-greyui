@@ -16,6 +16,20 @@ export default defineConfig({
       ],
     },
   },
+  server: {
+    fs: {
+      allow: [
+        // Allow serving files from the playground root
+        resolve(__dirname),
+        // Allow serving files from the project root
+        resolve(__dirname, '../'),
+        // Allow serving files from playground node_modules (should be default, but explicit is safe)
+        resolve(__dirname, 'node_modules'),
+        // Allow serving files from root node_modules
+        resolve(__dirname, '../node_modules'),
+      ],
+    },
+  },
   resolve: {
     alias: {
       '~': resolve(__dirname, '../lib'),

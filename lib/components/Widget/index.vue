@@ -1,122 +1,130 @@
 <template>
-  <StylableLayout
-    :id
-    :name="name"
-    :layout="layout"
-    :value="modelValue"
-    :cardinality="cardinality"
-    :required="required"
-    :min="bounds[0]"
-    :max="bounds[1]"
-    :valid="valid"
-    :error="error"
-    v-bind="attrs"
-    @input="onInput"
-    @clear="$emit('update:modelValue', emptyValue as TData<T, C>)"
-    @validate="onValidate"
-  />
+  <Primitive
+    :as="as ?? 'div'"
+    :as-child="asChild"
+    :data-invalid="valid === false ? '' : undefined"
+    :data-error="valid === false ? errors.join(' ') : undefined"
+  >
+    <slot v-bind="injection" />
+  </Primitive>
 </template>
 
 <script lang="ts">
-export type Cardinality = 'one' | 'many'
-export type TData<T, C> = C extends 'one' ? T : T[]
-export type WidgetProps<T, C extends Cardinality> = {
+import type { Ref } from 'vue'
+import type { Cardinality, PrimitiveProps } from '~/components'
+
+export type TModel<T, C extends Cardinality = 'one'> =
+  C extends 'one' ? T : T[]
+export type TWidget<T, C extends Cardinality = 'one'> =
+  C extends 'one' ? T : Record<string, T>
+export type WidgetProps<T, C extends Cardinality> = PrimitiveProps & {
   cardinality?: C
-  emptyValue: TData<T, C>
-  required?: C extends 'many' ? undefined : boolean
-  min?: C extends 'many' ? number : 0 | 1
-  max?: C extends 'many' ? number : 1
-  validators?: Validator<TData<T, C>>[]
-  autoValidate?: boolean
+  validators?: Record<string, (value: TModel<T, C>) => boolean>
+  acceptInvalid?: boolean
 }
+export type WidgetInjection<T, C extends Cardinality> = {
+  cardinality: C
+  value: Ref<TWidget<T, C>>
+  initialValue: TWidget<T, C>
+  valid: Ref<boolean>
+  errors: Ref<string[]>
+  validate: (value: TModel<T, C>) => void
+  clearError: (error: keyof WidgetProps<T, C>['validators']) => void
+} & (C extends 'many' ? {
+  add: (item: T) => void
+  remove: (key: string) => void
+} : {})
 
-export type WidgetEmits = {
-  clear: []
-  validated: [valid: boolean, error?: string]
-}
-
-export type WidgetLayoutEmits<T, C extends Cardinality> = Pick<WidgetEmits, 'clear'> & {
-  input: [newValue: TData<T, C>]
-  validate: [value?: TData<T, C>]
-}
-
-export type WidgetLayoutProps<T, C extends Cardinality> = StylableProps<{
-  value?: TData<T, C>
-  valid?: boolean
-  error?: string
-} & Omit<WidgetProps<T, C>, "validators" | "autoValidate">, WidgetLayoutEmits<TData<T, C>, C>>
-
-export type IWidget = {
-  validate: <T>(value: T) => true | string
-}
+export type WidgetInterface<T, C extends Cardinality> = {
+  validate: () => boolean
+} & Pick<WidgetInjection<T, C>, 'clearError'>
 </script>
 
-<script lang="ts" setup generic="T, C extends Cardinality, P extends WidgetLayoutProps<T, C>, E extends WidgetLayoutEmits<T, C>">
-import { computed, onMounted, ref, watch } from 'vue'
-import { type StylableProps, Stylable as StylableLayout } from '~/components'
-import { useInputAttrs } from '~/composables'
-import type { Validator } from '~/components'
+<script lang="ts" setup generic="T, C extends Cardinality">
+import { computed, onMounted, provide, watch } from 'vue'
+import { Primitive } from '~/components'
 
-const { id, name, ...attrs } = useInputAttrs()
-const modelValue = defineModel<TData<T, C>>()
-const props = defineProps<StylableProps<P, E> & WidgetProps<T, C>>()
-const emits = defineEmits<WidgetEmits>()
+defineOptions({ name: 'Widget' })
+const value = defineModel<TModel<T, C>>({ required: false })
+const props = defineProps<WidgetProps<T, C>>()
 
-let emptyValue: TData<T, C> | null
+let index = props.cardinality === 'many' && (value.value as T[] ?? []).length
+let keys = props.cardinality === 'many' && (value.value as T[] ?? []).map((_, i) => String(i))
+
+const valueMap = computed({
+  get: () => (props.cardinality !== 'many'
+    ? value.value
+    : Object.fromEntries((value.value as T[] ?? [])
+      .map((v, i) => [keys![i] ?? String(i), v]
+      ))) as TWidget<T, C>,
+  set: (v: TWidget<T, C>) => {
+    if (props.cardinality !== 'many') {
+      const valid = validate(v as TModel<T, C>)
+      value.value = !valid && !props.acceptInvalid
+        ? value.value
+        : v as TModel<T, C>
+      value.value = v as TModel<T, C>
+    } else {
+      const valid = validate(Object.values(v) as TModel<T, C>)
+      keys = Object.keys(v)
+      value.value = !valid && !props.acceptInvalid
+        ? value.value
+        : Object.values(v) as TModel<T, C>
+    }
+  },
+})
+
+let initialValue: TWidget<T, C>
 onMounted(() => {
-  emptyValue = JSON.stringify(modelValue.value ?? props.emptyValue) === JSON.stringify(props.emptyValue)
-    ? props.emptyValue
-    : null
+  initialValue = valueMap.value
 })
 
-const bounds = computed(() => {
-  const min = props.cardinality === 'many' ? Math.max(0, props.min ?? 0) : props.required ? 1 : 0
-  const max = props.cardinality === 'many' ? Math.max(min, props.max ?? Infinity) : 1
-  return [min, max] as [number, number]
-})
+const errors = defineModel<string[]>('error', { required: false, default: () => [] })
+const valid = computed(() => errors.value.length === 0)
 
-const validators = computed(() => {
-  const [min, max] = bounds.value
-  return [
-    props.cardinality !== 'many' && props.required && ((str: string) => Boolean(str) || 'This field is required.'),
-    props.cardinality === 'many' && min && ((value: T[]) => value?.length >= min || `Require at least ${min} items.`),
-    props.cardinality === 'many' && max && ((value: T[]) => value?.length <= max || `Accept no more than ${max} items.`),
-    ...(props.validators ?? []),
-  ].filter(Boolean) as Validator<TData<T, C>>[]
-})
-
-const error = ref<string>()
-const valid = ref<boolean>()
-
-function onInput(newValue?: TData<T, C>) {
-  modelValue.value = newValue
+watch(value, validate)
+function validate(value: TModel<T, C>): boolean {
+  const e = Object
+    .entries(props.validators ?? {})
+    .filter(([, validator]) => validator && !validator(value))
+    .map(([key]) => key)
+  errors.value = e
+  return e.length === 0
 }
 
-function validate(value: TData<T, C>) {
-  let index = 0, res: true | string = true
-  while (index < validators.value.length && res === true) {
-    res = validators.value[index++](value)
-  }
+function clearError(error: keyof WidgetProps<T, 'one'>['validators']) {
+  errors.value = errors.value.filter(e => e !== error)
 
-  valid.value = typeof res !== 'string'
-  error.value = typeof res === 'string'
-    ? res
-    : undefined
-
-  return res
 }
 
-function onValidate(value?: TData<T, C>) {
-  const res = validate(value ?? modelValue.value)
-  emits('validated', res === true, typeof res === 'string' ? res : undefined)
-  return res
-}
+const injection = {
+  value: valueMap,
+  cardinality: props.cardinality,
+  initialValue,
+  valid,
+  errors,
+  validate,
+  clearError,
+  ...props.cardinality === 'many' ? {
+    add: (item: T) => {
+      const key = String(index++)
+      valueMap.value = {
+        ...(valueMap.value ?? {} as TWidget<T, C>),
+        [key]: item
+      }
+    },
+    remove: (key: string) => {
+      valueMap.value = Object
+        .fromEntries(Object
+          .entries(valueMap.value)
+          .filter(([k]) => k !== key)) as TWidget<T, C>
+    },
+  } : {},
+} as WidgetInjection<T, C>
 
-if (props.autoValidate) {
-  watch(modelValue, onValidate)
-}
-
+provide<WidgetInjection<T, C>>('widget', injection)
 defineExpose({
-  validate: onValidate,
-})
+  validate: () => validate(value.value),
+  clearError,
+} as WidgetInterface<T, C>)
 </script>
