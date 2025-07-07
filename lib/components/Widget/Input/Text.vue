@@ -18,6 +18,10 @@ const props = withDefaults(defineProps<{
 })
 
 const { value: model } = inject<WidgetInjection<string, 'one'>>('widget')
+if (!model) {
+  throw new Error('InputText must be used within a Widget component.');
+}
+
 const value = ref(model.value)
 watch(model, (newValue) => value.value = newValue)
 

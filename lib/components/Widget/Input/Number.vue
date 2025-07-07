@@ -14,6 +14,10 @@ import { nextTick } from 'vue'
 
 defineOptions({ name: 'InputNumber' })
 const { value: model } = inject<WidgetInjection<number, 'one'>>('widget')
+if (!model) {
+  throw new Error('InputNumber must be used within a Widget component.');
+}
+
 const props = withDefaults(defineProps<{ format?: Intl.NumberFormat }>(), {
   format: () => new Intl.NumberFormat('en-US', {
     style: 'decimal',

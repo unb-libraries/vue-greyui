@@ -1,6 +1,7 @@
 // Widget
 export { default as Widget, type TWidget, type WidgetProps, type WidgetInjection, type WidgetInterface } from '~/components/Widget/index.vue'
 export { default as WidgetClear } from '~/components/Widget/Clear.vue'
+export { default as WidgetIncrement } from '~/components/Widget/Increment.vue'
 export * from '~/components/Widget/TagList'
 
 // Input
