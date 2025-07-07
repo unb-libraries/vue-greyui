@@ -10,7 +10,7 @@
 import type { WidgetInjection } from '~/components'
 import { inject, ref, watch } from 'vue'
 
-defineOptions({ name: 'WidgetTextInput' })
+defineOptions({ name: 'InputText' })
 const props = withDefaults(defineProps<{
   updateOn?: 'input' | 'unfocus'
 }>(), {
