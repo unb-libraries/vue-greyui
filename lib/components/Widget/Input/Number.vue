@@ -2,6 +2,8 @@
   <input
     ref="input"
     type="text"
+    :id="id"
+    :name="name"
     :value="value"
     @focusin="setInputCursor"
     @keydown.stop="onKey" />
@@ -13,7 +15,7 @@ import { computed, inject, ref, watch } from 'vue'
 import { nextTick } from 'vue'
 
 defineOptions({ name: 'InputNumber' })
-const { value: model } = inject<WidgetInjection<number, 'one'>>('widget')
+const { value: model, id, name } = inject<WidgetInjection<number, 'one'>>('widget')
 if (!model) {
   throw new Error('InputNumber must be used within a Widget component.');
 }

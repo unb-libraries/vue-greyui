@@ -2,6 +2,8 @@
   <input
     ref="input"
     type="checkbox"
+    :id="id"
+    :name="name"
     v-model="model"
     :value="value"
     :data-state="model === 'indeterminate' ? model : model ? 'checked' : 'unchecked'" />
@@ -16,7 +18,7 @@ defineProps<{
   value?: string
 }>()
 
-const { value: model } = inject<WidgetInjection<boolean | 'indeterminate', 'one'>>('widget')
+const { value: model, id, name } = inject<WidgetInjection<boolean | 'indeterminate', 'one'>>('widget')
 if (!model) {
   throw new Error('Checkbox must be used within a Widget component.')
 }

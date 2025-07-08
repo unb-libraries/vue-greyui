@@ -2,6 +2,8 @@
   <input
     ref="input"
     type="radio"
+    :id="`${name}[${value}]`"
+    :name="name"
     v-model="model"
     :value="JSON.stringify(value)"
     :data-checked="value === model ? '' : undefined" />
@@ -16,7 +18,7 @@ defineProps<{
   value: T
 }>()
 
-const { value: model, cardinality } = inject<WidgetInjection<T, 'one'>>('widget')
+const { value: model, cardinality, id, name } = inject<WidgetInjection<T, 'one'>>('widget')
 if (!model) {
   throw new Error('Radio must be used within a Widget component.')
 }

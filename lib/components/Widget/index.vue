@@ -24,6 +24,8 @@ export type WidgetProps<T, C extends Cardinality> = PrimitiveProps & {
 }
 export type WidgetInjection<T, C extends Cardinality> = {
   cardinality: C
+  id: string
+  name: string
   value: Ref<TWidget<T, C>>
   initialValue: TWidget<T, C>
   valid: Ref<boolean>
@@ -43,8 +45,10 @@ export type WidgetInterface<T, C extends Cardinality> = {
 <script lang="ts" setup generic="T, C extends Cardinality">
 import { computed, onMounted, provide, watch } from 'vue'
 import { Primitive } from '~/components'
+import { useInputAttrs } from '~/composables'
 
 defineOptions({ name: 'Widget' })
+const { id, name } = useInputAttrs()
 const value = defineModel<TModel<T, C>>({ required: false })
 const props = withDefaults(defineProps<WidgetProps<T, C>>(), {
   cardinality: () => 'one' as C,
@@ -102,6 +106,8 @@ function clearError(error: keyof WidgetProps<T, 'one'>['validators']) {
 }
 
 const injection = {
+  id,
+  name,
   value: valueMap,
   cardinality: props.cardinality,
   initialValue,

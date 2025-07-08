@@ -2,6 +2,8 @@
   <input
     type="text"
     v-model="value"
+    :id="id"
+    :name="name"
     @input="onInput()"
     @blur="onBlur()" />
 </template>
@@ -17,7 +19,7 @@ const props = withDefaults(defineProps<{
   updateOn: 'input',
 })
 
-const { value: model } = inject<WidgetInjection<string, 'one'>>('widget')
+const { value: model, id, name } = inject<WidgetInjection<string, 'one'>>('widget')
 if (!model) {
   throw new Error('InputText must be used within a Widget component.');
 }

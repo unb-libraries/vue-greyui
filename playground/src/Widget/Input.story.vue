@@ -34,10 +34,10 @@
         </HstButton>
       </template>
 
-      <Widget v-model="state.checkbox.value" class="text-100">
+      <Widget v-model="state.checkbox.value" class="text-100" v-slot="{ id }">
         <div class="inline-flex items-center gap-50 w-full text-base-94">
-          <InputCheckbox id="chckbx" class="widget cursor-pointer p-0 text-75r w-fit aspect-square data-[checked]:bg-accent focus-within:data-[checked]:bg-accent-60 hover:data-[checked]:bg-accent-60" />
-          <label for="chckbx" class="cursor-pointer">White is just another shade of grey.</label>
+          <InputCheckbox class="widget cursor-pointer p-0 text-75r w-fit aspect-square data-[state=checked]:bg-accent focus-within:data-[state=checked]:bg-accent-60 hover:data-[state=checked]:bg-accent-60 data-[state=indeterminate]:bg-accent focus-within:data-[state=indeterminate]:bg-accent-60 hover:data-[state=indeterminate]:bg-accent-60" />
+          <label :for="id" class="cursor-pointer">White is just another shade of grey.</label>
         </div>
       </Widget>
     </Variant>
@@ -47,11 +47,11 @@
         <HstJson v-model="state.radio.value" title="Value" />
       </template>
 
-      <Widget v-model="state.radio.value" class="text-100">
+      <Widget v-model="state.radio.value" class="text-100" v-slot="{ name }">
         <div class="flex flex-col gap-y-50r">
           <div v-for="option in ['Grey', 'Light grey', 'Dark grey']" :key="option" class="inline-flex items-center gap-50 w-full text-base-94">
-            <InputRadio :id="`shades[${option}]`" class="widget cursor-pointer p-0 text-75r w-fit rounded-full aspect-square checked:bg-accent focus-within:checked:bg-accent-60 hover:checked:bg-accent-60" name="shades" :value="option" />
-            <label :for="`shades[${option}]`" class="cursor-pointer">{{ option }}</label>
+            <InputRadio class="widget cursor-pointer p-0 text-75r w-fit rounded-full aspect-square checked:bg-accent focus-within:checked:bg-accent-60 hover:checked:bg-accent-60" :value="option" />
+            <label :for="`${name}[${option}]`" class="cursor-pointer">{{ option }}</label>
           </div>
           
         </div>
