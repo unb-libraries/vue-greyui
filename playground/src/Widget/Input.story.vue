@@ -25,12 +25,28 @@
         <InputNumber class="input" :format="selectedFormat" />
       </Widget>
     </Variant>
+
+    <Variant title="Checkbox" v-model="state.checkbox.value" icon="lucide:check">
+      <template #controls>
+        <HstJson v-model="state.checkbox.value" title="Value" />
+        <HstButton color="primary" class="htw-p-2" @click="state.checkbox.value = 'indeterminate'">
+          Indeterminate
+        </HstButton>
+      </template>
+
+      <Widget v-model="state.checkbox.value" class="text-100">
+        <div class="inline-flex items-center gap-50 w-full text-base-94">
+          <InputCheckbox id="chckbx" class="widget cursor-pointer p-0 text-75r w-fit aspect-square data-[checked]:bg-accent focus-within:data-[checked]:bg-accent-60 hover:data-[checked]:bg-accent-60" />
+          <label for="chckbx" class="cursor-pointer">White is just another shade of grey.</label>
+        </div>
+      </Widget>
+    </Variant>
   </Story>
 </template>
 
 <script lang="ts" setup>
-import { computed, reactive } from 'vue'
-import { Widget, InputText, InputNumber } from '~/components'
+import { computed, reactive, ref, watch } from 'vue'
+import { Widget, InputText, InputNumber, InputCheckbox } from '~/components'
 
 const state = reactive({
   text: {
@@ -41,6 +57,9 @@ const state = reactive({
     value: 1000,
     format: 'currency',
   },
+  checkbox: {
+    value: false as boolean | 'indeterminate',
+  }
 })
 
 const numberFormats = new Map<string, Intl.NumberFormat>()
