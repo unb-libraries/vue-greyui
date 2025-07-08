@@ -46,7 +46,11 @@ import { Primitive } from '~/components'
 
 defineOptions({ name: 'Widget' })
 const value = defineModel<TModel<T, C>>({ required: false })
-const props = defineProps<WidgetProps<T, C>>()
+const props = withDefaults(defineProps<WidgetProps<T, C>>(), {
+  cardinality: () => 'one' as C,
+  validators: () => ({}),
+  acceptInvalid: false,
+})
 
 let index = props.cardinality === 'many' && (value.value as T[] ?? []).length
 let keys = props.cardinality === 'many' && (value.value as T[] ?? []).map((_, i) => String(i))

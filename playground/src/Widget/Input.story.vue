@@ -26,7 +26,7 @@
       </Widget>
     </Variant>
 
-    <Variant title="Checkbox" v-model="state.checkbox.value" icon="lucide:check">
+    <Variant title="Checkbox" v-model="state.checkbox.value" icon="lucide:square-check">
       <template #controls>
         <HstJson v-model="state.checkbox.value" title="Value" />
         <HstButton color="primary" class="htw-p-2" @click="state.checkbox.value = 'indeterminate'">
@@ -41,12 +41,28 @@
         </div>
       </Widget>
     </Variant>
+
+    <Variant title="Radio" v-model="state.radio.value" icon="lucide:circle-check">
+      <template #controls>
+        <HstJson v-model="state.radio.value" title="Value" />
+      </template>
+
+      <Widget v-model="state.radio.value" class="text-100">
+        <div class="flex flex-col gap-y-50r">
+          <div v-for="option in ['Grey', 'Light grey', 'Dark grey']" :key="option" class="inline-flex items-center gap-50 w-full text-base-94">
+            <InputRadio :id="`shades[${option}]`" class="widget cursor-pointer p-0 text-75r w-fit rounded-full aspect-square checked:bg-accent focus-within:checked:bg-accent-60 hover:checked:bg-accent-60" name="shades" :value="option" />
+            <label :for="`shades[${option}]`" class="cursor-pointer">{{ option }}</label>
+          </div>
+          
+        </div>
+      </Widget>
+    </Variant>
   </Story>
 </template>
 
 <script lang="ts" setup>
 import { computed, reactive, ref, watch } from 'vue'
-import { Widget, InputText, InputNumber, InputCheckbox } from '~/components'
+import { Widget, InputText, InputNumber, InputCheckbox, InputRadio } from '~/components'
 
 const state = reactive({
   text: {
@@ -59,7 +75,10 @@ const state = reactive({
   },
   checkbox: {
     value: false as boolean | 'indeterminate',
-  }
+  },
+  radio: {
+    value: undefined as string,
+  },
 })
 
 const numberFormats = new Map<string, Intl.NumberFormat>()

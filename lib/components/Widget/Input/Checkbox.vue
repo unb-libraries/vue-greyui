@@ -4,7 +4,7 @@
     type="checkbox"
     v-model="model"
     :value="value"
-    :data-checked="model ? String(model) : undefined" />
+    :data-state="model === 'indeterminate' ? model : model ? 'checked' : 'unchecked'" />
 </template>
 
 <script lang="ts" setup>
