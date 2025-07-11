@@ -2,30 +2,32 @@
   <input
     ref="input"
     type="checkbox"
+    v-model="model"
     :id="id"
     :name="name"
-    v-model="model"
     :value="value"
-    :data-state="model === 'indeterminate' ? model : model ? 'checked' : 'unchecked'" />
+    :data-state="state" />
 </template>
 
-<script lang="ts" setup>
-import { inject, ref, watch } from 'vue'
-import { WidgetInjection } from '~/components'
+<script lang="ts" setup generic="T">
+import { computed, inject, ref, watch } from 'vue'
+import type { Cardinality, WidgetInjection } from '~/components'
 
 defineOptions({ name: 'InputCheckbox' })
 defineProps<{
-  value?: string
+  value?: T
 }>()
 
-const { value: model, id, name } = inject<WidgetInjection<boolean | 'indeterminate', 'one'>>('widget')
+const { value: model, id, name } = inject<WidgetInjection<boolean | 'indeterminate', Cardinality>>('widget')
 if (!model) {
   throw new Error('Checkbox must be used within a Widget component.')
 }
 
+const state = computed<'checked' | 'unchecked' | 'indeterminate'>(() => model.value === 'indeterminate' ? 'indeterminate' : model.value ? 'checked' : 'unchecked')
+
 const input = ref<HTMLInputElement>()
-watch(() => model.value, (newValue) => {
-  if (newValue === 'indeterminate' && input.value) {
+watch(state, state => {
+  if (state === 'indeterminate' && input.value) {
     input.value.indeterminate = true
   } else if (input.value) {
     input.value.indeterminate = false

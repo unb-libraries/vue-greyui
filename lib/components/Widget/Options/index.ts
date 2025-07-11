@@ -1,0 +1,2 @@
+export { default as WidgetOptions, type WidgetOptionsInjection } from '~/components/Widget/Options/index.vue'
+export { default as WidgetOptionsCollection } from '~/components/Widget/Options/Collection.vue'

@@ -26,7 +26,7 @@
       </Widget>
     </Variant>
 
-    <Variant title="Checkbox" v-model="state.checkbox.value" icon="lucide:square-check">
+    <Variant title="Checkbox" icon="lucide:square-check">
       <template #controls>
         <HstJson v-model="state.checkbox.value" title="Value" />
         <HstButton color="primary" class="htw-p-2" @click="state.checkbox.value = 'indeterminate'">
@@ -42,6 +42,31 @@
       </Widget>
     </Variant>
 
+    <Variant title="Select all" icon="lucide:folder-check">
+      <template #controls>
+        <HstJson v-model="state.selectAll.selection" title="Value" />
+      </template>
+      
+      <WidgetOptions v-model="state.selectAll.selection"
+        :options="state.selectAll.options"
+        cardinality="many"
+        class="space-y-25r"
+        v-slot="{ id }"
+      >
+        <WidgetOptionsCollection v-slot="{ option, id }">
+          <div class="inline-flex items-center gap-50 w-full text-base-94">
+            <InputCheckbox class="widget cursor-pointer p-0 text-75r w-fit aspect-square checked:bg-accent focus-within:checked:bg-accent-60 hover:checked:bg-accent-60"
+            />
+            <label :for="id" class="cursor-pointer">{{ option }}</label>
+          </div>
+        </WidgetOptionsCollection>
+        <div class="inline-flex items-center gap-50 w-full text-base-94">
+          <InputCheckboxAll class="widget cursor-pointer p-0 text-75r w-fit aspect-square data-[state=checked]:bg-accent focus-within:data-[state=checked]:bg-accent-60 hover:data-[state=checked]:bg-accent-60 data-[state=indeterminate]:bg-accent focus-within:data-[state=indeterminate]:bg-accent-60 hover:data-[state=indeterminate]:bg-accent-60" />
+          <label :for="`${id}[__all__]`" class="cursor-pointer">All of the above</label>
+        </div>
+      </WidgetOptions>
+    </Variant>
+
     <Variant title="Radio" v-model="state.radio.value" icon="lucide:circle-check">
       <template #controls>
         <HstJson v-model="state.radio.value" title="Value" />
@@ -53,7 +78,6 @@
             <InputRadio class="widget cursor-pointer p-0 text-75r w-fit rounded-full aspect-square checked:bg-accent focus-within:checked:bg-accent-60 hover:checked:bg-accent-60" :value="option" />
             <label :for="`${name}[${option}]`" class="cursor-pointer">{{ option }}</label>
           </div>
-          
         </div>
       </Widget>
     </Variant>
@@ -61,8 +85,9 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, reactive, ref, watch } from 'vue'
-import { Widget, InputText, InputNumber, InputCheckbox, InputRadio } from '~/components'
+import { computed, reactive } from 'vue'
+import { Widget, InputText, InputNumber, InputCheckbox, InputRadio, WidgetOptions, WidgetOptionsCollection, InputCheckboxAll } from '~/components'
+import { useDataProvider } from '~/composables'
 
 const state = reactive({
   text: {
@@ -75,6 +100,11 @@ const state = reactive({
   },
   checkbox: {
     value: false as boolean | 'indeterminate',
+  },
+  selectAll: {
+    selection: [] as string[],
+    value: false as boolean | 'indeterminate',
+    options: useDataProvider(['Grey', 'Light grey', 'Dark grey']).data,
   },
   radio: {
     value: undefined as string,

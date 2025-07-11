@@ -4,6 +4,7 @@
     :as-child="asChild"
     :data-invalid="valid === false ? '' : undefined"
     :data-error="valid === false ? errors.join(' ') : undefined"
+    v-bind="attrs"
   >
     <slot v-bind="injection" />
   </Primitive>
@@ -22,7 +23,7 @@ export type WidgetProps<T, C extends Cardinality> = PrimitiveProps & {
   validators?: Record<string, (value: TModel<T, C>) => boolean>
   acceptInvalid?: boolean
 }
-export type WidgetInjection<T, C extends Cardinality> = {
+export type WidgetInjection<T, C extends Cardinality = 'one'> = {
   cardinality: C
   id: string
   name: string
@@ -42,13 +43,13 @@ export type WidgetInterface<T, C extends Cardinality> = {
 } & Pick<WidgetInjection<T, C>, 'clearError'>
 </script>
 
-<script lang="ts" setup generic="T, C extends Cardinality">
+<script lang="ts" setup generic="T, C extends Cardinality = 'one'">
 import { computed, onMounted, provide, watch } from 'vue'
 import { Primitive } from '~/components'
 import { useInputAttrs } from '~/composables'
 
-defineOptions({ name: 'Widget' })
-const { id, name } = useInputAttrs()
+defineOptions({ name: 'Widget', inheritAttrs: false })
+const { id, name, ...attrs } = useInputAttrs()
 const value = defineModel<TModel<T, C>>({ required: false })
 const props = withDefaults(defineProps<WidgetProps<T, C>>(), {
   cardinality: () => 'one' as C,
@@ -109,6 +110,7 @@ const injection = {
   id,
   name,
   value: valueMap,
+  // TODO: Make this reactive (computed)
   cardinality: props.cardinality,
   initialValue,
   valid,
@@ -116,14 +118,14 @@ const injection = {
   validate,
   clearError,
   ...props.cardinality === 'many' ? {
-    add: (item: T) => {
+    add(item: T) {
       const key = String(index++)
       valueMap.value = {
         ...(valueMap.value ?? {} as TWidget<T, C>),
         [key]: item
       }
     },
-    remove: (key: string) => {
+    remove(key: string) {
       valueMap.value = Object
         .fromEntries(Object
           .entries(valueMap.value)

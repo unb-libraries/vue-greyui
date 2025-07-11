@@ -1,5 +1,5 @@
 <template>
-  <Story>
+  <Story title="Collection" auto-props-disabled icon="lucide:boxes">
     <div class="grid grid-cols-5 gap-50">
       <Collection :items="items" v-slot="{ item }">
         <img :src="(item as string)" class="hover:sepia cursor-pointer" />
