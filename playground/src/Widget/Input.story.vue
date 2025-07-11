@@ -81,12 +81,22 @@
         </div>
       </Widget>
     </Variant>
+
+    <Variant title="Toggle" icon="lucide:power">
+      <template #controls>
+        <HstJson v-model="state.toggle.value" title="State" />
+      </template>
+
+      <Widget v-model="state.toggle.value" as-child>
+        <InputToggle class="w-1/4 text-base-94 rounded-25 px-50r py-25r data-[state=on]:bg-accent data-[state=off]:bg-red" />
+      </Widget>
+    </Variant>
   </Story>
 </template>
 
 <script lang="ts" setup>
 import { computed, reactive } from 'vue'
-import { Widget, InputText, InputNumber, InputCheckbox, InputRadio, WidgetOptions, WidgetOptionsCollection, InputCheckboxAll } from '~/components'
+import { Widget, InputText, InputNumber, InputCheckbox, InputRadio, WidgetOptions, WidgetOptionsCollection, InputCheckboxAll, InputToggle } from '~/components'
 import { useDataProvider } from '~/composables'
 
 const state = reactive({
@@ -108,6 +118,9 @@ const state = reactive({
   },
   radio: {
     value: undefined as string,
+  },
+  toggle: {
+    value: false,
   },
 })
 

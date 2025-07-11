@@ -7,7 +7,7 @@
 </template>
 
 <script lang="ts">
-import type { Cardinality } from '~/components'
+import { type Cardinality } from '~/components'
 import CollectionItem from './CollectionItem.vue'
 export type CollectionProps<T> = { items: Record<string, T> }
 export type CollectionInjection<T> = CollectionProps<T>
