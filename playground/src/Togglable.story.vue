@@ -1,12 +1,11 @@
 <template>
   <Story title="Togglable" auto-props-disabled :layout="{ type: 'single', iframe: false }" icon="lucide:power">
-    <template #controls>
-      <HstJson v-model="open" title="Open" />
-    </template>
-
     <Variant title="Manual" icon="lucide:mouse-pointer-click">
+      <template #controls>
+        <HstJson v-model="manualOpen" title="Open" />
+      </template>
       <div class="flex w-full gap-x-50r justify-center">
-        <Togglable v-model="open" class="w-1/4">
+        <Togglable v-model="manualOpen" class="w-1/4">
           <Toggler class="bg-accent hover:bg-accent-60 text-base-94 rounded-25 w-full leading-[1.5em] px-50r py-25r">
             Toggle
           </Toggler>
@@ -22,9 +21,14 @@
     </Variant>
 
     <Variant title="Auto" icon="lucide:square-dashed-mouse-pointer">
+      <template #controls>
+        <HstJson v-model="autoOpen" title="Open" />
+        <HstSlider v-model="delay" :min="0" :max="1000" :step="100" title="Delay" />
+      </template>
+
       <div class="flex w-full gap-x-50r justify-center">
-        <Togglable v-model="open" class="w-1/4">
-          <AutoToggler class="relative z-[1] bg-base-24 border border-base-44 border-dashed text-base-94 w-full text-center leading-[1.5em] px-50r py-25r" tabindex="0">
+        <Togglable v-model="autoOpen" class="w-1/4">
+          <AutoToggler :delay="delay" class="relative z-[1] bg-base-24 border border-base-44 border-dashed text-base-94 w-full text-center leading-[1.5em] px-50r py-25r" tabindex="0">
             Toggle
           </AutoToggler>
           
@@ -46,5 +50,7 @@
 import { ref } from 'vue'
 import { Togglable, Toggler, AutoToggler, TogglableContent } from '~/components'
 
-const open = ref(false)
+const manualOpen = ref(false)
+const autoOpen = ref(false)
+const delay = ref(300)
 </script>

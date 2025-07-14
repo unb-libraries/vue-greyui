@@ -8,7 +8,9 @@
 import { inject, onMounted } from 'vue'
 import { Primitive, type PrimitiveProps, type WidgetInjection } from '~/components'
 
-defineProps<PrimitiveProps>()
+const props = defineProps<PrimitiveProps & {
+  delay?: number
+}>()
 const { $el, value: open } = inject<WidgetInjection<boolean, 'one'>>('widget')
 if (!open) {
   throw new Error('Toggler must be used within a Togglable component.')
@@ -17,8 +19,9 @@ if (!open) {
 onMounted(() => {
   const root = $el.value
 
-  const openHandler = () => open.value = true
-  const closeHandler = () => open.value = false
+  let handler: ReturnType<typeof setTimeout>
+  const openHandler = () => handler = setTimeout(() => open.value = true, props.delay ?? 0)
+  const closeHandler = () => { clearTimeout(handler); open.value = false }
 
   root.addEventListener('mouseenter', openHandler)
   root.addEventListener('mouseleave', closeHandler)
