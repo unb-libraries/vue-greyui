@@ -12,7 +12,7 @@
 </template>
 
 <script lang="ts">
-type WidgetOptionsProps<T, C extends Cardinality> = WidgetProps<T, C> & {
+export type WidgetOptionsProps<T, C extends Cardinality> = WidgetProps<T, C> & {
   options: DataProvider<T>['data']['value']
 }
 export type WidgetOptionsInjection<T, C extends Cardinality> = Pick<WidgetOptionsProps<T, C>, 'options'>
