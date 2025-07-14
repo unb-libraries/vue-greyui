@@ -25,6 +25,7 @@ export type WidgetProps<T, C extends Cardinality> = PrimitiveProps & {
   acceptInvalid?: boolean
 }
 export type WidgetInjection<T, C extends Cardinality = 'one'> = {
+  $el: Ref<HTMLElement>
   cardinality: C
   id: string
   name: string
@@ -105,10 +106,13 @@ function validate(value: TModel<T, C>): boolean {
 
 function clearError(error: keyof WidgetProps<T, 'one'>['validators']) {
   errors.value = errors.value.filter(e => e !== error)
-
 }
 
+const el = ref<{ $el: HTMLElement }>()
+const $el = computed(() => el.value?.$el) as Ref<HTMLElement>
+
 const injection = {
+  $el,
   id,
   name,
   value: valueMap,
@@ -138,9 +142,8 @@ const injection = {
 
 provide<WidgetInjection<T, C>>('widget', injection)
 
-const el = ref<{ $el: HTMLElement }>()
 defineExpose({
-  $el: computed(() => el.value?.$el) as Ref<HTMLElement>,
+  $el,
   validate: () => validate(value.value),
   clearError,
 } as WidgetInterface<T, C>)
