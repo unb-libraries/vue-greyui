@@ -15,10 +15,14 @@ if (!open) {
 }
 
 onMounted(() => {
-  const el = $el.value
-  el.addEventListener('mouseenter', () => open.value = true)
-  el.addEventListener('mouseleave', () => open.value = false)
-  el.addEventListener('focusin', () => open.value = true)
-  el.addEventListener('focusout', () => open.value = false)
+  const root = $el.value
+
+  const openHandler = () => open.value = true
+  const closeHandler = () => open.value = false
+
+  root.addEventListener('mouseenter', openHandler)
+  root.addEventListener('mouseleave', closeHandler)
+  root.addEventListener('focusin', openHandler)
+  root.addEventListener('focusout', closeHandler)
 })
 </script>
