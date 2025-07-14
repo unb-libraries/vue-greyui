@@ -1,5 +1,6 @@
 <template>
   <Primitive
+    ref="el"
     :as="as ?? 'div'"
     :as-child="asChild"
     :data-invalid="valid === false ? '' : undefined"
@@ -39,12 +40,13 @@ export type WidgetInjection<T, C extends Cardinality = 'one'> = {
 } : {})
 
 export type WidgetInterface<T, C extends Cardinality> = {
+  $el: Ref<HTMLElement>
   validate: () => boolean
 } & Pick<WidgetInjection<T, C>, 'clearError'>
 </script>
 
 <script lang="ts" setup generic="T, C extends Cardinality = 'one'">
-import { computed, onMounted, provide, watch } from 'vue'
+import { computed, onMounted, provide, ref, watch } from 'vue'
 import { Primitive } from '~/components'
 import { useInputAttrs } from '~/composables'
 
@@ -135,7 +137,10 @@ const injection = {
 } as WidgetInjection<T, C>
 
 provide<WidgetInjection<T, C>>('widget', injection)
+
+const el = ref<{ $el: HTMLElement }>()
 defineExpose({
+  $el: computed(() => el.value?.$el) as Ref<HTMLElement>,
   validate: () => validate(value.value),
   clearError,
 } as WidgetInterface<T, C>)

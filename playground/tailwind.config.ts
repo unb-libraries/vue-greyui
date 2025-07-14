@@ -160,6 +160,7 @@ export default {
       1600: `16rem`,
       '1600r': `16em`,
       px: `1px`,
+      '1/5': `20%`,
     },
     borderRadius: {
       0: `0`,
