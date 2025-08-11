@@ -9,15 +9,15 @@
       :name="name"
       :model-value="isSelected(id)"
       @update:model-value="onSelect(id, $event)"
-      v-slot="{ id }"
+      v-slot="{ id, value: selected }"
     >
-      <slot :option="item" :key="id" :id="id" />
+      <slot :option="item" :key="id" :id="id" :selected="selected.value" />
     </Widget>
   </Collection>
 </template>
 
 <script lang="ts" setup generic="T, C extends Cardinality">
-import { inject } from 'vue'
+import { inject, watch } from 'vue'
 import type { Cardinality, TWidget, WidgetInjection, WidgetOptionsInjection } from '~/components'
 import { Collection, Widget } from '~/components'
 

@@ -4,7 +4,7 @@
     :cardinality="(cardinality as C)"
     :as-child="asChild"
     :model-value="modelValue"
-    @update:model-value="$emit('update:modelValue', $event as TModel<T, C>)"
+    @update:model-value="$emit('update:modelValue', $event as TModel<keyof WidgetOptionsProps<T, C>['options'], C>)"
     v-slot="slotProps"
   >
     <slot v-bind="slotProps" />
@@ -25,7 +25,7 @@ import { Widget } from '~/components'
 import type { DataProvider } from '~/composables'
 
 defineOptions({ name: 'WidgetOptions' })
-defineModel<TModel<T, C>>({ required: false })
+defineModel<TModel<keyof WidgetOptionsProps<T, C>['options'], C>>({ required: false })
 const props = withDefaults(defineProps<WidgetOptionsProps<T, C>>(), {
   cardinality: () => 'one' as C,
   validators: () => ({}),

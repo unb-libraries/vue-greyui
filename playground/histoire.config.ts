@@ -16,6 +16,7 @@ export default defineConfig({
   tree: {
     groups: [
       { id: 'widgets', title: 'Widgets' },
+      { id: 'content', title: 'Content' },
     ]
   }
 })
