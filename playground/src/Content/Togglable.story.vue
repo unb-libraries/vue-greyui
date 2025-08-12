@@ -1,5 +1,5 @@
 <template>
-  <Story title="Togglable" auto-props-disabled :layout="{ type: 'single', iframe: false }" icon="lucide:power">
+  <Story title="Togglable" group="content" auto-props-disabled :layout="{ type: 'single', iframe: false }" icon="lucide:power">
     <Variant title="Manual" icon="lucide:mouse-pointer-click">
       <template #controls>
         <HstJson v-model="manualOpen" title="Open" />
