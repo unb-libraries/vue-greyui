@@ -3,8 +3,8 @@
     <Variant title="Tabs" icon="lucide:folder-closed">
       <ContentPool v-model="tab" :options="tabs" class="w-full text-base-94">
         <div class="w-full ml-50 space-x-25">
-          <ContentPoolOptions v-slot="{ option }">
-            <InputToggle class="bg-base-54 data-[state=off]:bg-base-44 data-[state=off]:text-base-74 border-none rounded-t-25 px-50r py-25r">
+          <ContentPoolOptions v-slot="{ option, selected }">
+            <InputToggle :disabled="selected" class="bg-base-54 data-[state=off]:bg-base-44 data-[state=off]:text-base-74 border-none rounded-t-25 px-50r py-25r">
               {{ option }}
             </InputToggle>
           </ContentPoolOptions>
