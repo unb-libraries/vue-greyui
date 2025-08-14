@@ -60,6 +60,25 @@
         </div>
       </ContentPool>
     </Variant>
+
+    <Variant title="Carousel" icon="lucide:gallery-horizontal">
+      <template #controls>
+        <HstJson v-model="image" title="Image" />
+      </template>
+      
+      <ContentPool v-model="image" :options="images" class="flex flex-col w-full gap-y-25">
+        <ContentPoolElect v-slot="{ tab }" class="w-full aspect-3/2">
+          <img :src="(tab as string)" class="object-cover size-full" />
+        </ContentPoolElect>
+        <div class="grid grid-cols-5 w-full gap-x-25">
+          <ContentPoolOptions v-slot="{ option, selected }">
+            <InputToggle :disabled="selected">
+              <img :src="(option as string)" class="aspect-3/2 size-full hover:cursor-pointer hover:opacity-50" />
+            </InputToggle>
+          </ContentPoolOptions>
+        </div>
+      </ContentPool>
+    </Variant>
   </Story>
 </template>
 
@@ -98,4 +117,13 @@ watch(cardinality, cardinality => {
     selected.value = [selected.value].filter(Boolean) as string[]
   }
 })
+
+const { data: images } = useDataProvider([
+  'https://picsum.photos/id/1015/600/400',
+  'https://picsum.photos/id/1016/600/400',
+  'https://picsum.photos/id/1018/600/400',
+  'https://picsum.photos/id/1020/600/400',
+  'https://picsum.photos/id/1024/600/400',
+])
+const image = ref(Object.values(images.value)[0])
 </script>
