@@ -1,4 +1,5 @@
 import forms from '@tailwindcss/forms'
+import scrollbar from 'tailwind-scrollbar'
 import plugin from 'tailwindcss/plugin'
 import type { Config } from 'tailwindcss'
 
@@ -184,6 +185,7 @@ export default {
   },
   plugins: [
     forms,
+    scrollbar,
     plugin(function ({ theme, addComponents }) {
       addComponents({
         // Widget
