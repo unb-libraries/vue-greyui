@@ -29,14 +29,73 @@
         </ContentPoolElect>
       </ContentPool>
     </Variant>
+
+    <Variant title="Accordion" icon="lucide:panel-top-open">
+      <template #controls>
+        <HstJson v-model="selected" title="Selected" />
+        <HstSelect v-model="cardinality" title="Cardinality" :options="['one', 'many']" />
+      </template>
+
+      <ContentPool
+        v-model="selected"
+        :cardinality="cardinality"
+        :key="cardinality"
+        :options="items"
+        class="w-full text-base-94"
+      >
+        <div class="flex flex-col w-full bg-base-34 border border-base-44 rounded-25 overflow-hidden">
+          <ContentPoolOptions v-slot="{ option, selected }">
+            <div class="group border-b border-base-44 last:border-b-0">
+              <InputToggle class="group flex justify-between text-start items-center w-full p-50r hover:bg-base-44">
+                <span>{{ (option as Item).title }}</span>
+                <Icon name="chevron" class="group-data-[state=on]:rotate-180 transition-transform duration-300" />
+              </InputToggle>
+              <ContentPoolItem class="p-100r text-85">
+                <div class="p-100r bg-base-24 rounded-25">
+                  {{ (option as Item).content }}
+                </div>
+              </ContentPoolItem>
+            </div>
+          </ContentPoolOptions>
+        </div>
+      </ContentPool>
+    </Variant>
   </Story>
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
-import { ContentPool, ContentPoolOptions, InputToggle, ContentPoolElect } from '~/components'
+import { ref, watch } from 'vue'
+import { ContentPool, ContentPoolOptions, InputToggle, ContentPoolItem, ContentPoolElect } from '~/components'
 import { useDataProvider } from '~/composables'
+import { Icon } from '@playground'
 
 const tab = ref('Colour')
 const { data: tabs } = useDataProvider(['Colour', 'Font'])
+
+type Item = { title: string; content: string }
+const { data: items } = useDataProvider<Item>([
+  {
+    title: 'Profile',
+    content: 'This is your profile. You control what you share.',
+  },
+  {
+    title: 'Account',
+    content: 'How you login goes here.',
+  },
+  {
+    title: 'Billing',
+    content: 'Setup a payment plan here.'
+  },
+])
+
+const cardinality = ref<'one' | 'many'>('one')
+const selected = ref<string | string[]>()
+
+watch(cardinality, cardinality => {
+  if (cardinality === 'one' && Array.isArray(selected.value)) {
+    selected.value = selected.value.at(-1) || ''
+  } else if (cardinality === 'many') {
+    selected.value = [selected.value].filter(Boolean) as string[]
+  }
+})
 </script>
