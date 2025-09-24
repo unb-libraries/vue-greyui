@@ -14,7 +14,7 @@ import { OverflowInjection } from '~/components'
 defineOptions({ name: 'OverflowStepper' })
 const props = withDefaults(defineProps<{
   direction: 'forward' | 'backward'
-  step?: 'page' | 'end' | number
+  step?: 'page' | 'end' | 'element' | number
 }>(), {
   step: 100
 })
@@ -36,6 +36,32 @@ const stepSize = computed(() => {
       const overflowEdge = orientation === 'horizontal' ? 'scrollWidth' : 'scrollHeight'
       return content.value[overflowEdge]
     }
+    case 'element': {
+      const targetEdge = orientation === 'horizontal' ? 'left' : 'top'
+      const getTargetElement = () => {
+        const targetEdge = orientation === 'horizontal' ? ['left', 'right'] : ['top', 'bottom']
+        const contentBounds = content.value.getBoundingClientRect()
+        const contentElements = Array
+          .from(content.value.childNodes.values() ?? [])
+          .filter(node => node.nodeType === Node.ELEMENT_NODE) as Element[]
+
+        const findFirstInvisible = (node: Element) => {
+          const bounds = (node as Element).getBoundingClientRect()
+          return props.direction === 'forward'
+            ? bounds[targetEdge[0]] > contentBounds[targetEdge[0]] && bounds[targetEdge[1]] > contentBounds[targetEdge[1]]
+            : bounds[targetEdge[0]] < contentBounds[targetEdge[0]] && bounds[targetEdge[1]] < contentBounds[targetEdge[1]]
+        }
+
+        return props.direction === 'forward'
+          ? contentElements.find(findFirstInvisible)
+          : contentElements.reverse().find(findFirstInvisible)
+      }
+
+      return () => {
+        const targetElement = getTargetElement()
+        return Math.abs(targetElement?.getBoundingClientRect()[targetEdge] - content.value.getBoundingClientRect()[targetEdge])
+      }
+    }
     default: {
       return props.step
     }
@@ -43,10 +69,10 @@ const stepSize = computed(() => {
 })
 
 function onScrollForward() {
-  scrollTo(scrollPosition.value + stepSize.value)
+  scrollTo(scrollPosition.value + (typeof stepSize.value === 'function' ? stepSize.value() : stepSize.value))
 }
 
 function onScrollBackward() {
-  scrollTo(scrollPosition.value - stepSize.value)
+  scrollTo(scrollPosition.value - (typeof stepSize.value === 'function' ? stepSize.value() : stepSize.value))
 }
 </script>

@@ -1,7 +1,7 @@
 <template>
   <Story title="Overflow" group="content" auto-props-disabled icon="lucide:scroll-text">
     <template #controls>
-      <HstSelect v-model="step" :options="['page', 'end', 'fixed']" title="Step mode" />
+      <HstSelect v-model="step" :options="['page', 'end', 'element', 'fixed']" title="Step mode" />
       <HstSlider v-if="step === 'fixed'" v-model="stepSize" :min="50" :max="500" :step="50" title="Step size" />
     </template>
     
