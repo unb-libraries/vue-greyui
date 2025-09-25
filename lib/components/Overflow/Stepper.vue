@@ -15,8 +15,10 @@ defineOptions({ name: 'OverflowStepper' })
 const props = withDefaults(defineProps<{
   direction: 'forward' | 'backward'
   step?: 'page' | 'end' | 'element' | number
+  stepOffset?: number
 }>(), {
-  step: 100
+  step: 100,
+  stepOffset: 0
 })
 
 const overflow = inject<OverflowInjection>('overflow')
@@ -69,10 +71,10 @@ const stepSize = computed(() => {
 })
 
 function onScrollForward() {
-  scrollTo(scrollPosition.value + (typeof stepSize.value === 'function' ? stepSize.value() : stepSize.value))
+  scrollTo(scrollPosition.value + (typeof stepSize.value === 'function' ? stepSize.value() : stepSize.value) - props.stepOffset)
 }
 
 function onScrollBackward() {
-  scrollTo(scrollPosition.value - (typeof stepSize.value === 'function' ? stepSize.value() : stepSize.value))
+  scrollTo(scrollPosition.value - (typeof stepSize.value === 'function' ? stepSize.value() : stepSize.value) - props.stepOffset)
 }
 </script>

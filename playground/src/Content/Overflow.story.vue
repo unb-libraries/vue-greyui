@@ -3,6 +3,7 @@
     <template #controls>
       <HstSelect v-model="step" :options="['page', 'end', 'element', 'fixed']" title="Step mode" />
       <HstSlider v-if="step === 'fixed'" v-model="stepSize" :min="50" :max="500" :step="50" title="Step size" />
+      <HstSlider v-model="stepOffset" :min="0" :max="100" :step="1" title="Step offset" />
     </template>
     
     <Overflow
@@ -44,6 +45,7 @@
         <OverflowStepper
           direction="forward"
           :step="((step !== 'fixed' ? step : stepSize) as 'page' | number)"
+          :step-offset="stepOffset"
           :disabled="status === 'end'"
           class="disabled:text-base-44 p-50 bg-base-44 disabled:bg-base-54 rounded-25"
         >
@@ -52,6 +54,7 @@
         <OverflowStepper
           direction="backward"
           :step="((step !== 'fixed' ? step : stepSize) as 'page' | number)"
+          :step-offset="stepOffset"
           :disabled="status === 'start'"
           class="disabled:text-base-44 p-50 bg-base-44 disabled:bg-base-54 rounded-25"
         >
@@ -69,4 +72,5 @@ import { Overflow, OverflowContent, OverflowStepper } from '~/components'
 
 const step = ref('fixed')
 const stepSize = ref(100)
+const stepOffset = ref(0)
 </script>
