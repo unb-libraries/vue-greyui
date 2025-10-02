@@ -1,8 +1,8 @@
 <template>
   <Primitive
     ref="el"
-    :as="as ?? 'div'"
-    :as-child="asChild"
+    :as
+    :as-child
     :data-invalid="valid === false ? '' : undefined"
     :data-error="valid === false ? errors.join(' ') : undefined"
     v-bind="attrs"
@@ -47,12 +47,21 @@ export type WidgetInterface<T, C extends Cardinality> = {
 </script>
 
 <script lang="ts" setup generic="T, C extends Cardinality = 'one'">
-import { computed, onMounted, provide, ref, watch } from 'vue'
-import { Primitive } from '~/components'
-import { useInputAttrs } from '~/composables'
+import { computed, inject, onMounted, provide, ref, useAttrs, useId, watch } from 'vue'
+import { Primitive, FormFieldInjection } from '~/components'
 
 defineOptions({ name: 'Widget', inheritAttrs: false })
-const { id, name, ...attrs } = useInputAttrs()
+const { id: formFieldId, name: formFieldName } = inject<Partial<FormFieldInjection>>('form-field', {})
+const { id, name, ...attrs } = (() => {
+  const defaultName = useId()
+  const { id, name, ...attrs } = useAttrs() as { id?: string, name?: string }
+  return {
+    id: id ?? formFieldId ?? `w-${defaultName}`,
+    name: name ?? formFieldName ?? defaultName,
+    ...attrs
+  }
+})()
+
 const value = defineModel<TModel<T, C>>({ required: false })
 const props = withDefaults(defineProps<WidgetProps<T, C>>(), {
   cardinality: () => 'one' as C,
