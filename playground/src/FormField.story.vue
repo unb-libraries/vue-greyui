@@ -14,7 +14,7 @@
       <GreyFormField name="last-name" class="flex flex-col gap-y-50">
         <GreyFormFieldLabel class="font-bold">Last name</GreyFormFieldLabel>
         <GreyWidget v-model="lastName" as-child :validators="{ required: (v) => v.length > 0 }">
-          <InputText class="widget data-[invalid]:border-red" update-on="unfocus" />
+          <InputText class="widget data-[status=invalid]:border-red" update-on="unfocus" />
         </GreyWidget>
       </GreyFormField>
     </GreyForm>

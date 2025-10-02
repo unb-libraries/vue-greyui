@@ -1,7 +1,16 @@
 // Widget
-export { default as Widget, type TModel, type TWidget, type WidgetProps, type WidgetInjection, type WidgetInterface } from './index.vue'
+export {
+  default as Widget,
+  type TModel,
+  type TWidget,
+  type WidgetProps,
+  type WidgetEmits,
+  type WidgetInjection,
+  type WidgetInterface,
+} from './index.vue'
 export { default as WidgetClear } from './Clear.vue'
 export { default as WidgetIncrement } from './Increment.vue'
+
 export * from './TagList'
 export * from './Options'
 

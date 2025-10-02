@@ -5,6 +5,7 @@
     :as-child
     :data-invalid="valid === false ? '' : undefined"
     :data-error="valid === false ? errors.join(' ') : undefined"
+    :data-status="!validated ? 'initial' : valid ? 'valid' : 'invalid'"
     v-bind="attrs"
   >
     <slot v-bind="injection" />
@@ -24,6 +25,9 @@ export type WidgetProps<T, C extends Cardinality> = PrimitiveProps & {
   validators?: Record<string, (value: TModel<T, C>) => boolean>
   acceptInvalid?: boolean
 }
+export type WidgetEmits = {
+  validated: [valid: boolean, errors: string[]]
+}
 export type WidgetInjection<T, C extends Cardinality = 'one'> = {
   $el: Ref<HTMLElement>
   cardinality: C
@@ -36,6 +40,7 @@ export type WidgetInjection<T, C extends Cardinality = 'one'> = {
   valid: Ref<boolean>
   errors: Ref<string[]>
   clear: (emptyValue?: TWidget<T, C>) => void
+  reset: () => void
   validate: (value: TModel<T, C>) => void
   clearError: (error: keyof WidgetProps<T, C>['validators']) => void
 } & (C extends 'many' ? {
@@ -50,10 +55,12 @@ export type WidgetInterface<T, C extends Cardinality> = {
 </script>
 
 <script lang="ts" setup generic="T, C extends Cardinality = 'one'">
-import { computed, inject, onMounted, provide, ref, useAttrs, useId, watch } from 'vue'
-import { Primitive, FormFieldInjection } from '~/components'
+import { computed, inject, onMounted, provide, ref, useAttrs, useId, watch, nextTick } from 'vue'
+import { FormInjection, Primitive, type FormFieldInjection } from '~/components'
 
 defineOptions({ name: 'Widget', inheritAttrs: false })
+
+const { register } = inject<Partial<FormInjection>>('form', {})
 const { id: formFieldId, name: formFieldName } = inject<Partial<FormFieldInjection>>('form-field', {})
 const { id, name, ...attrs } = (() => {
   const defaultName = useId()
@@ -71,6 +78,7 @@ const props = withDefaults(defineProps<WidgetProps<T, C>>(), {
   validators: () => ({}),
   acceptInvalid: false,
 })
+const emits = defineEmits<WidgetEmits>()
 
 let index = props.cardinality === 'many' && (value.value as T[] ?? []).length
 let keys = props.cardinality === 'many' && (value.value as T[] ?? []).map((_, i) => String(i))
@@ -113,7 +121,7 @@ function wasInitiallyEmpty(): boolean {
 }
 
 function clear(emptyValue?: TWidget<T, C>) {
-  if (!valueMap.value) return
+  if (valueMap.value === undefined) return
   emptyValue ??= (() => {
     switch (typeof value.value) {
       case 'string': return '' as TWidget<T, C>
@@ -123,23 +131,52 @@ function clear(emptyValue?: TWidget<T, C>) {
     }
   })() as TWidget<T, C>
   valueMap.value = wasInitiallyEmpty() ? emptyValue as TWidget<T, C> : null
+  nextTick(() => {
+    validated.value = false
+    errors.value = []
+  })
 }
 
+function reset() {
+  valueMap.value = initialValue
+  nextTick(() => {
+    validated.value = false
+    errors.value = []
+  })
+}
+
+const validated = ref(false)
 const errors = defineModel<string[]>('error', { required: false, default: () => [] })
 const valid = computed(() => errors.value.length === 0)
 
 watch(value, validate)
 function validate(value: TModel<T, C>): boolean {
+  validated.value = true
   const e = Object
     .entries(props.validators ?? {})
     .filter(([, validator]) => validator && !validator(value))
     .map(([key]) => key)
   errors.value = e
-  return e.length === 0
+  const valid = e.length === 0
+  emits('validated', valid, e)
+  return valid
 }
 
 function clearError(error: keyof WidgetProps<T, 'one'>['validators']) {
   errors.value = errors.value.filter(e => e !== error)
+}
+
+if (name && register) {
+  register(name, {
+    validate: () => validate(value.value),
+    clear,
+    reset,
+    errors,
+    resolve: (error?: string) => {
+      if (error) clearError(error)
+      else errors.value = []
+    },
+  })
 }
 
 const el = ref<{ $el: HTMLElement }>()
@@ -158,6 +195,7 @@ const injection = {
   valid,
   errors,
   clear,
+  reset,
   validate,
   clearError,
   ...props.cardinality === 'many' ? {
