@@ -31,8 +31,11 @@ export type WidgetInjection<T, C extends Cardinality = 'one'> = {
   name: string
   value: Ref<TWidget<T, C>>
   initialValue: TWidget<T, C>
+  isEmpty: () => boolean
+  wasInitiallyEmpty: () => boolean
   valid: Ref<boolean>
   errors: Ref<string[]>
+  clear: (emptyValue?: TWidget<T, C>) => void
   validate: (value: TModel<T, C>) => void
   clearError: (error: keyof WidgetProps<T, C>['validators']) => void
 } & (C extends 'many' ? {
@@ -100,6 +103,28 @@ onMounted(() => {
   initialValue = valueMap.value
 })
 
+function isEmpty() {
+  return !value.value || (props.cardinality === 'many' && !Object.keys(valueMap.value as TWidget<T, 'many'>).length)
+}
+
+function wasInitiallyEmpty(): boolean {
+  return !initialValue
+    || (props.cardinality === 'many' && !Object.keys(initialValue as TWidget<T, 'many'>).length)
+}
+
+function clear(emptyValue?: TWidget<T, C>) {
+  if (!valueMap.value) return
+  emptyValue ??= (() => {
+    switch (typeof value.value) {
+      case 'string': return '' as TWidget<T, C>
+      case 'number': return 0 as TWidget<T, C>
+      case 'boolean': return false as TWidget<T, C>
+      case 'object': return (Array.isArray(value.value)) ? [] : {}
+    }
+  })() as TWidget<T, C>
+  valueMap.value = wasInitiallyEmpty() ? emptyValue as TWidget<T, C> : null
+}
+
 const errors = defineModel<string[]>('error', { required: false, default: () => [] })
 const valid = computed(() => errors.value.length === 0)
 
@@ -128,8 +153,11 @@ const injection = {
   // TODO: Make this reactive (computed)
   cardinality: props.cardinality,
   initialValue,
+  isEmpty,
+  wasInitiallyEmpty,
   valid,
   errors,
+  clear,
   validate,
   clearError,
   ...props.cardinality === 'many' ? {
