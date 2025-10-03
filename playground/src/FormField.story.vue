@@ -28,11 +28,18 @@
       </GreyFormField>
       <GreyFormField name="last-name" class="flex flex-col gap-y-50">
         <GreyFormFieldLabel class="font-bold">Last name</GreyFormFieldLabel>
-        <GreyWidget v-model="lastName" as-child :validators="{ required: (v) => v.length > 0 }">
+        <GreyWidget
+          v-model="lastName"
+          as-child
+          :validators="{ required: (v) => v.length > 0 }"
+        >
           <InputText class="widget data-[status=invalid]:border-red" update-on="unfocus" />
         </GreyWidget>
       </GreyFormField>
-      <GreyFormSubmit class="bg-accent-50 disabled:bg-accent-30 disabled:text-base-64 px-50 py-25 rounded-25 w-fit" strict>Submit</GreyFormSubmit>
+      <div class="flex gap-x-25">
+        <GreyFormSubmit class="text-base-94 bg-accent-50 hover:bg-accent-60 disabled:bg-accent-30 disabled:text-base-64 px-50 py-25 rounded-25 w-fit" strict>Submit</GreyFormSubmit>
+        <GreyFormClear class="text-base-94 bg-base-34 border border-base-54 hover:border-accent-50 px-50 py-25 rounded-25 w-fit ml-50">Clear</GreyFormClear>
+      </div>
     </GreyForm>
   </Story>
 </template>
@@ -45,6 +52,7 @@ import {
   FormField as GreyFormField,
   FormFieldLabel as GreyFormFieldLabel,
   FormSubmit as GreyFormSubmit,
+  FormClear as GreyFormClear,
   Widget as GreyWidget,
   InputText,
 } from '~/components'
