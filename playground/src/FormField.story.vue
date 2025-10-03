@@ -3,8 +3,23 @@
     <template #controls>
       <HstJson v-model="values" title="Values" />
     </template>
-    <GreyForm id="personal" class="flex flex-col gap-y-100 text-base-94">
+    
+    <GreyForm
+      ref="form"
+      id="personal"
+      class="flex flex-col gap-y-100 text-base-94"
+      @submit.prevent="onSubmit"
+      v-slot="{ errors, valid }"
+    >
       <h1 class="text-125">Personal information</h1>
+      <div v-if="submitted" class="px-50 py-25 rounded-25 bg-accent-50 text-base-94">
+        Thank you for your submission!
+      </div>
+      <template v-else>
+        <div v-for="(err, field) of errors.value" class="px-50 py-25 rounded-25 bg-red text-base-94">
+          {{ field.split('-').join(' ') }}: {{ err.join(', ') }}
+        </div>
+      </template>
       <GreyFormField name="first-name" class="flex flex-col gap-y-50">
         <GreyFormFieldLabel class="font-bold">First name</GreyFormFieldLabel>
         <GreyWidget v-model="firstName" as-child>
@@ -17,19 +32,24 @@
           <InputText class="widget data-[status=invalid]:border-red" update-on="unfocus" />
         </GreyWidget>
       </GreyFormField>
+      <GreyFormSubmit class="bg-accent-50 disabled:bg-accent-30 disabled:text-base-64 px-50 py-25 rounded-25 w-fit" strict>Submit</GreyFormSubmit>
     </GreyForm>
   </Story>
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import {
+  FormInterface,
   Form as GreyForm,
   FormField as GreyFormField,
   FormFieldLabel as GreyFormFieldLabel,
+  FormSubmit as GreyFormSubmit,
   Widget as GreyWidget,
   InputText,
 } from '~/components'
+
+const form = ref<FormInterface>()
 
 const firstName = ref('')
 const lastName = ref('')
@@ -44,4 +64,16 @@ const values = computed({
     lastName.value = json.lastName
   }
 })
+
+const submitted = ref(false)
+watch(submitted, s => {
+  if (s) {
+    setTimeout(() => submitted.value = false, 3000)
+  }
+})
+
+function onSubmit() {
+  form.value?.clear()
+  submitted.value = true
+}
 </script>
