@@ -1,5 +1,5 @@
 <template>
-  <Story title="Modal" group="content" auto-props-disabled icon="lucide:container">
+  <Story title="Modal" group="content" auto-props-disabled icon="lucide:picture-in-picture-2">
     <template #controls>
       <HstJson v-model="open" title="Open" />
     </template>
